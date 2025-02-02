@@ -40,11 +40,9 @@ class _SecondaryPageState extends State<SecondaryPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pop(context);
-        },
+        onPressed: _incrementCounter,
         tooltip: 'Back',
-        child: const Icon(Icons.arrow_back),
+        child: const Icon(Icons.add),
       ),
     );
   }
