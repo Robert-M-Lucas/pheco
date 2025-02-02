@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'ui/pages/main_page.dart';
+import 'ui/pages/home_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Pheco'),
+      home: const HomePage(),
     );
   }
 }
