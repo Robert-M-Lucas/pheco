@@ -9,7 +9,7 @@ class HomePage extends StatefulWidget {
 }
 
 class SlowRoute extends MaterialPageRoute {
-  SlowRoute({required WidgetBuilder builder}) : super(builder: builder);
+  SlowRoute({required super.builder});
 
   @override
   Duration get transitionDuration => const Duration(seconds: 2);
