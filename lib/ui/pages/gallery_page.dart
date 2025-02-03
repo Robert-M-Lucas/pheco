@@ -23,48 +23,53 @@ class _GalleryPageState extends State<GalleryPage> {
   }
 
   void navigateToOther(GalleryType other) {
-    Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) =>
-            GalleryPage(type: other)));
+    Navigator.of(context).push(PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          GalleryPage(type: other),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final tween = Tween(begin: 0.0, end: 1.0);
+        final opacityAnimation = animation.drive(tween);
+        return FadeTransition(opacity: opacityAnimation, child: child);
+      },
+    ));
   }
 
   Widget drawer(BuildContext context) {
-    List<Widget> sample_folders = [];
-    
-    for (int i = 0; i < 100; i ++) {
-      sample_folders.add(
-        ListTile(
-            leading: const Icon(Icons.folder),
-            title: Text('Folder $i'),
-            onTap: () {
-              Navigator.pop(context);
-        })
-      );
+    List<Widget> sampleFolders = [];
+
+    for (int i = 0; i < 100; i++) {
+      sampleFolders.add(ListTile(
+          leading: const Icon(Icons.folder),
+          title: Text('Folder $i'),
+          onTap: () {
+            Navigator.pop(context);
+          }));
     }
-    
+
     return Drawer(
       child: Column(
         children: [
           Expanded(
             child: ListView(
               children: [
-                DrawerHeader(
-                  decoration:
-                      BoxDecoration(color: Theme.of(context).colorScheme.tertiary),
-                  child: const Text('Pheco',
-                      style: TextStyle(color: Colors.white, fontSize: 24)),
-                ) as Widget,
-              ] + sample_folders,
+                    Container(
+                      height: 80, // Custom height
+                      color: Theme.of(context).colorScheme.primary,
+                      alignment: Alignment.center,
+                      child: const Text('Pheco',
+                          style: TextStyle(color: Colors.white, fontSize: 24)),
+                    ) as Widget
+                  ] +
+                  sampleFolders,
             ),
           ),
           const Divider(),
           ListTile(
-            leading: Icon(Icons.settings),
-            title: Text('Settings'),
+            leading: const Icon(Icons.settings),
+            title: const Text('Settings'),
             onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const SettingsPage())
-              );
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const SettingsPage()));
             },
           ),
         ],
@@ -76,8 +81,12 @@ class _GalleryPageState extends State<GalleryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(getTitle()),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        title: Text(
+          getTitle(),
+          style: const TextStyle(color: Colors.white),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       drawer: drawer(context),
       body: Center(

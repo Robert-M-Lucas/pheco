@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pheco/ui/pages/secondary_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -13,7 +12,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         title: const Text("Settings Page"),
       ),
       body: Center(
