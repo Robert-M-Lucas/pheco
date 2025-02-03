@@ -23,7 +23,7 @@ class _GalleryPageState extends State<GalleryPage> {
   }
 
   void navigateToOther(GalleryType other) {
-    Navigator.of(context).push(PageRouteBuilder(
+    Navigator.of(context).pushReplacement(PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) =>
           GalleryPage(type: other),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
