@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pheco/ui/pages/gallery_page.dart';
 
 import 'ui/pages/home_page.dart';
 
@@ -17,8 +18,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: const GalleryPage(type: GalleryType.local),
     );
   }
 }
-

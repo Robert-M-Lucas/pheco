@@ -25,21 +25,22 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _goToSecondaryPage() {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const SecondaryPage(title: "Secondary"),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(-1.0, 0.0);
-          const end = Offset.zero;
-          final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: Curves.decelerate));
-          final offsetAnimation = animation.drive(tween);
+    Navigator.of(context).push(PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          const SecondaryPage(title: "Secondary"),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(-1.0, 0.0);
+        const end = Offset.zero;
+        final tween = Tween(begin: begin, end: end)
+            .chain(CurveTween(curve: Curves.decelerate));
+        final offsetAnimation = animation.drive(tween);
 
-          return SlideTransition(
-            position: offsetAnimation,
-            child: child,
-          );
-        },
-      ));
+        return SlideTransition(
+          position: offsetAnimation,
+          child: child,
+        );
+      },
+    ));
   }
 
   @override
