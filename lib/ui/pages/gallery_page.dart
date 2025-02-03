@@ -1,5 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:media_store_plus/media_store_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pheco/main.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 enum GalleryType { local, serverOnly }
 
@@ -13,6 +20,54 @@ class GalleryPage extends StatefulWidget {
 }
 
 class _GalleryPageState extends State<GalleryPage> {
+  List<Widget>? folders;
+
+  @override
+  void initState() {
+    loadFolders();
+    super.initState();
+  }
+
+  Future<void> ransackFiles() async {
+    // print("Started ransack");
+    //
+    // Stopwatch t = Stopwatch()..start();
+    //
+    // print("Getting external directory");
+    // // Get the directory where your app can store files
+    // final directory = await getExternalStorageDirectory();
+    //
+    // print("Listing files");
+    // // List all files in the directory
+    // final dir = Directory(directory?.path ?? '');
+    // // final dir = Directory("/storage/emulated/0");
+    //
+    // print("Found dir ${dir.path}");
+    //
+    // List<FileSystemEntity> files = dir.listSync(recursive: true, followLinks: false);
+    //
+    // print("Filtering");
+    // // Filter files by the specified extension
+    // List<FileSystemEntity> filteredFiles = files.where((file) {
+    //   return file is File && file.path.endsWith(".jpg");
+    // }).toList();
+    //
+    // t.stop();
+    //
+    // print("Found files in ${t.elapsed.inMilliseconds}ms");
+    //
+    // for (var item in filteredFiles) {
+    //   print(item.path);
+    // }
+    // const platform = MethodChannel('com.example.pheco/media');
+    // try {
+    //     final List<dynamic> images = await platform.invokeMethod('getImages');
+    //     print("Images: $images");
+    //   } on PlatformException catch (e) {
+    //     print("Failed to get images: '${e.message}'.");
+    // }
+  }
+
   String getTitle() {
     switch (widget.type) {
       case GalleryType.local:
@@ -34,7 +89,9 @@ class _GalleryPageState extends State<GalleryPage> {
     ));
   }
 
-  Widget drawer(BuildContext context) {
+  Future<void> loadFolders() async {
+    print("Async loading folders...");
+    await Future.delayed(const Duration(seconds: 5));
     List<Widget> sampleFolders = [];
 
     for (int i = 0; i < 100; i++) {
@@ -45,6 +102,27 @@ class _GalleryPageState extends State<GalleryPage> {
             Navigator.pop(context);
           }));
     }
+
+    if (mounted) {
+      setState(() {
+        folders = sampleFolders;
+      });
+      print("Set folder list");
+    } else {
+      print("Failed to set folder list as widget no longer exists");
+    }
+  }
+
+  Widget drawer(BuildContext context) {
+    List<Widget> dFolders;
+
+    dFolders = folders ??
+        [
+          const ListTile(
+            leading: Icon(Icons.folder),
+            title: Text('Loading folders...'),
+          )
+        ];
 
     return Drawer(
       child: Column(
@@ -60,7 +138,7 @@ class _GalleryPageState extends State<GalleryPage> {
                           style: TextStyle(color: Colors.white, fontSize: 24)),
                     ) as Widget
                   ] +
-                  sampleFolders,
+                  dFolders,
             ),
           ),
           const Divider(),
@@ -103,6 +181,14 @@ class _GalleryPageState extends State<GalleryPage> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          print("Button");
+          ransackFiles();
+        },
+        tooltip: 'Ransack',
+        child: const Icon(Icons.folder),
+      ),
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 8.0,
@@ -124,7 +210,7 @@ class _GalleryPageState extends State<GalleryPage> {
             Expanded(
               child: SizedBox.expand(
                 child: IconButton(
-                  icon: const Icon(Icons.account_tree, size: 30),
+                  icon: const Icon(Icons.storage, size: 30),
                   onPressed: () {
                     if (widget.type != GalleryType.serverOnly) {
                       navigateToOther(GalleryType.serverOnly);
