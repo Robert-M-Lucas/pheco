@@ -1,7 +1,10 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:permission_handler/permission_handler.dart';
 // import 'package:media_store_plus/media_store_plus.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
 
@@ -95,9 +98,55 @@ class _GalleryPageState extends State<GalleryPage> {
       });
 
       print("State set");
+
+      print("Testing compression");
+
+      File file = File(images[12]);
+      var result = await FlutterImageCompress.compressWithFile(
+        file.absolute.path,
+        quality: 80,
+      );
+      print(file.lengthSync());
+      print(result?.length);
+
+      final ratio = (result!.length.toDouble()) / (file.lengthSync().toDouble());
+      print("Ratio: $ratio");
+
+      print("Compression done");
+
+      print("Saving file");
+      saveFile(result, "compress.pheco.jpg");
+
     } on PlatformException catch (e) {
       print("Failed to get images: '${e.message}'.");
     }
+  }
+
+  Future<void> saveFile(Uint8List uint8List, String fileName) async {
+    // Request storage permission (needed for Android 10 and below)
+    if (await Permission.storage.request().isDenied) {
+      print("Storage permission denied");
+      return;
+    }
+
+    // Let the user pick a directory
+    String? outputDir = await FilePicker.platform.getDirectoryPath();
+    if (outputDir == null) {
+      // User canceled the file picker
+      print("User cancelled picking");
+      return;
+    }
+
+    print("Saving...");
+    // Define the full path
+    String filePath = '$outputDir/$fileName';
+
+    // Write the file
+    File file = File(filePath);
+    final result = await file.writeAsBytes(uint8List);
+    print(result);
+
+    print("File saved to: $filePath");
   }
 
   String getTitle() {
