@@ -1,11 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:media_store_plus/media_store_plus.dart';
-// import 'package:media_store_plus/media_store_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pheco/ui/pages/gallery_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 // final mediaStorePlugin = MediaStore();
 

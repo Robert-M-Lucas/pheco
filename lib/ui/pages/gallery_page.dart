@@ -3,9 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:permission_handler/permission_handler.dart';
-// import 'package:media_store_plus/media_store_plus.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
 import 'package:path/path.dart' as path;
 

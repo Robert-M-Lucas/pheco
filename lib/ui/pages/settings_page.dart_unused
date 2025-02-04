@@ -1,22 +1,24 @@
+import 'dart:convert';
+
+import 'package:dartssh2/dartssh2.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:pheco/ui/pages/about_page.dart';
 import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
-
-  @override
-  State<SettingsPage> createState() => _SettingsPageState();
-}
-
-class _SettingsPageState extends State<SettingsPage> {
-  SharedPreferences? _sp;
+class SettingsData {
+  late SharedPreferences _sp;
 
   bool _otherNetworks = true;
+  bool get otherNetworks => _otherNetworks;
+  Future<void> setOtherNetworks(bool val) async {
+    await _sp.setBool("otherNetworks", val);
+    _otherNetworks = true;
+  }
+
   bool _mobileData = false;
-  String _protocol = 'SFTP';
+  String _selectedProtocol = 'SFTP';
   final List<String> _protocolOptions = ['SFTP', 'SMB'];
   String _selectedFrequency = 'Manual';
   final List<String> _frequencyOptions = [
@@ -33,53 +35,77 @@ class _SettingsPageState extends State<SettingsPage> {
   TextEditingController();
   final TextEditingController _passwordFieldController =
   TextEditingController();
-  bool _hidePassword = true;
-  double _compressionStrength = 40;
+  int _compressionStrength = 95;
   List<String> _folders = [];
   bool _folderMode = false; // False is exclude
 
+
+
+  SettingsData._();
+
+  static Future<SettingsData> load(Widget baseWidget) async {
+    var s = SettingsData._();
+    s._sp = await SharedPreferences.getInstance();
+    s._otherNetworks = s._sp.getBool("otherNetworks") ?? s._otherNetworks;
+    s._mobileData = s._sp.getBool("mobileData") ?? s._mobileData;
+    s._selectedProtocol = s._sp.getString("selectedProtocol") ?? s._selectedProtocol;
+    s._selectedFrequency = s._sp.getString("selectedFrequence") ?? s._selectedFrequency;
+
+    var gLocalIp = s._sp.getString("localIp");
+    if (gLocalIp != null) { s._localIpFieldController.text = gLocalIp; }
+    var gPublicIp = s._sp.getString("publicIp");
+    if (gPublicIp != null) { s._publicIpFieldController.text = gPublicIp; }
+    var gUsername = s._sp.getString("username");
+    if (gUsername != null) { s._usernameFieldController.text = gUsername; }
+    var gPassword = s._sp.getString("password");
+    if (gPassword != null) { s._passwordFieldController.text = gPassword; }
+
+    s._compressionStrength = s._sp.getInt("compressionStrength") ?? s._compressionStrength;
+    s._folders = s._sp.getStringList("folders") ?? s._folders;
+    s._folderMode = s._sp.getBool("folderMode") ?? s._folderMode;
+    return s;
+  }
+}
+
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
+
   @override
-  void initState() {
-    loadSettings();
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  late SettingsData _settingsData;
+  bool _hidePassword = true;
+
+  @override
+  void initState() async {
+    _settingsData = await SettingsData.load();
     super.initState();
   }
 
-  Future<void> loadSettings() async {
-    _sp = await SharedPreferences.getInstance();
-    final keys = _sp!.getKeys();
+  Future<void> serverConnect() async {
+    print("Connecting to server");
+    final client = SSHClient(
+      await SSHSocket.connect('192.168.1.230', 22),
+      username: 'robert',
+      onPasswordRequest: () => 'TheTestPassword!',
+    );
 
-    final prefsMap = <String, dynamic>{};
-    for(String key in keys) {
-      prefsMap[key] = _sp!.get(key);
+    print("Connected");
+
+    final sftp = await client.sftp();
+    final items = await sftp.listdir('/home/robert');
+    for (final item in items) {
+      print(item.longname);
     }
 
-    print(prefsMap);
-
-    final otherNetworks = await _getOrDefaultSet('otherNetworks', true);
-    final mobileData = await _getOrDefaultSet('mobileData', false);
-    final protocol = await _getOrDefaultSet('protocol', 'SFTP');
-    final selectedFrequency = await _getOrDefaultSet('frequency', 'Manual');
-    final localIpFieldControllerT = await _getOrDefaultSet('localIp', '');
-    final publicIpFieldControllerT = await _getOrDefaultSet('publicIp', '');
-    final usernameFieldControllerT = await _getOrDefaultSet('username', '');
-    final passwordFieldControllerT = await _getOrDefaultSet('password', '');
-    final compressionStrength = await _getOrDefaultSet('compressionStrength', 40.0);
-    final folders = await _getOrDefaultSet('folders', <String>[]);
-    final folderMode = await _getOrDefaultSet('folderMode', false);
-
-    setState(() {
-      _otherNetworks = otherNetworks;
-      _mobileData = mobileData;
-      _protocol = protocol;
-      _selectedFrequency = selectedFrequency;
-      _localIpFieldController.text = localIpFieldControllerT;
-      _publicIpFieldController.text = publicIpFieldControllerT;
-      _usernameFieldController.text = usernameFieldControllerT;
-      _passwordFieldController.text = passwordFieldControllerT;
-      _compressionStrength = compressionStrength;
-      _folders = folders;
-      _folderMode = folderMode;
-    });
+    print("Writing file");
+    final file = await sftp.open('sftp_test.txt',
+        mode: SftpFileOpenMode.create | SftpFileOpenMode.write);
+    await file.writeBytes(utf8.encode('hello there!'));
+    await file.close();
+    print("File written");
   }
 
   Future<void> pickFolder() async {
@@ -88,50 +114,9 @@ class _SettingsPageState extends State<SettingsPage> {
     if (selectedDirectory != null) {
       setState(() {
         _folders.add(selectedDirectory);
-        _updateSetting("folders", _folders);
       });
     } else {
       print('Folder selection canceled.');
-    }
-  }
-
-  Future<T> _getOrDefaultSet<T>(String key, T defaultValue) async {
-    if (defaultValue is bool) {
-      final val = _sp!.getBool(key);
-      if (val == null) { await _sp!.setBool(key, defaultValue); return defaultValue; }
-      else { return val as T; }
-    } else if (defaultValue is int) {
-      final val = _sp!.getInt(key);
-      if (val == null) { await _sp!.setInt(key, defaultValue); return defaultValue; }
-      else { return val as T; }
-    } else if (defaultValue is double) {
-      final val = _sp!.getDouble(key);
-      if (val == null) { await _sp!.setDouble(key, defaultValue); return defaultValue; }
-      else { return val as T; }
-    } else if (defaultValue is String) {
-      final val = _sp!.getString(key);
-      if (val == null) { await _sp!.setString(key, defaultValue); return defaultValue; }
-      else { return val as T; }
-    }
-    else if (defaultValue is List<String>) {
-      final val = _sp!.getStringList(key);
-      if (val == null) { await _sp!.setStringList(key, defaultValue); return defaultValue; }
-      else { return val as T; }
-    }
-    print(defaultValue.runtimeType);
-    return null as T;
-  }
-
-  Future<void> _updateSetting(String key, dynamic value) async {
-    _sp ??= await SharedPreferences.getInstance();
-    if (value is bool) {
-      await _sp!.setBool(key, value);
-    } else if (value is String) {
-      await _sp!.setString(key, value);
-    } else if (value is double) {
-      await _sp!.setDouble(key, value);
-    } else if (value is List<String>) {
-      await _sp!.setStringList(key, value);
     }
   }
 
@@ -142,25 +127,24 @@ class _SettingsPageState extends State<SettingsPage> {
           padding: EdgeInsets.all(8.0),
           child: Center(
               child: Text(
-                'Server Settings',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 100, 100, 100)),
-              )),
+            'Server Settings',
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 100, 100, 100)),
+          )),
         ),
         ListTile(
           title: const Text('Select Protocol'),
           subtitle: DropdownButton<String>(
-            value: _protocol,
+            value: _selectedProtocol,
             onChanged: (String? newValue) {
               setState(() {
-                _protocol = newValue!;
-                _updateSetting("protocol", _protocol);
+                _selectedProtocol = newValue!;
               });
             },
             items:
-            _protocolOptions.map<DropdownMenuItem<String>>((String value) {
+                _protocolOptions.map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
                 child: Text(value),
@@ -172,9 +156,6 @@ class _SettingsPageState extends State<SettingsPage> {
           title: const Text('Local IP with Port'),
           subtitle: TextField(
             controller: _localIpFieldController,
-            onChanged: (newVal) {
-              _updateSetting("localIp", newVal);
-            },
             decoration: const InputDecoration(
               hintText: '192.168.1.230:22',
               border: OutlineInputBorder(),
@@ -185,9 +166,6 @@ class _SettingsPageState extends State<SettingsPage> {
           title: const Text('(Optional) Public IP with Port'),
           subtitle: TextField(
             controller: _publicIpFieldController,
-            onChanged: (newVal) {
-              _updateSetting("publicIp", newVal);
-            },
             decoration: const InputDecoration(
               hintText: '109.224.200.75:22',
               border: OutlineInputBorder(),
@@ -198,9 +176,6 @@ class _SettingsPageState extends State<SettingsPage> {
           title: const Text('Username'),
           subtitle: TextField(
             controller: _usernameFieldController,
-            onChanged: (newVal) {
-              _updateSetting("username", newVal);
-            },
             decoration: const InputDecoration(
               hintText: 'john_smith',
               border: OutlineInputBorder(),
@@ -211,9 +186,6 @@ class _SettingsPageState extends State<SettingsPage> {
           title: const Text('Password'),
           subtitle: TextField(
             controller: _passwordFieldController,
-            onChanged: (newVal) {
-              _updateSetting("password", newVal);
-            },
             obscureText: _hidePassword,
             decoration: InputDecoration(
               hintText: 'J0hnSm1thsPassw0rd!',
@@ -236,12 +208,12 @@ class _SettingsPageState extends State<SettingsPage> {
           padding: EdgeInsets.all(8.0),
           child: Center(
               child: Text(
-                'Upload Settings',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 100, 100, 100)),
-              )),
+            'Upload Settings',
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 100, 100, 100)),
+          )),
         ),
         ListTile(
           title: const Text('Select Upload Frequency'),
@@ -250,11 +222,10 @@ class _SettingsPageState extends State<SettingsPage> {
             onChanged: (String? newValue) {
               setState(() {
                 _selectedFrequency = newValue!;
-                _updateSetting("frequency", _selectedFrequency);
               });
             },
             items:
-            _frequencyOptions.map<DropdownMenuItem<String>>((String value) {
+                _frequencyOptions.map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
                 child: Text(value),
@@ -265,12 +236,11 @@ class _SettingsPageState extends State<SettingsPage> {
         SwitchListTile(
           title: const Text('Upload Over Other Networks'),
           subtitle:
-          const Text('Images will be uploaded through other WiFi networks'),
+              const Text('Images will be uploaded through other WiFi networks'),
           value: _otherNetworks,
           onChanged: (bool value) {
             setState(() {
               _otherNetworks = value;
-              _updateSetting("otherNetworks", _otherNetworks);
             });
           },
         ),
@@ -281,20 +251,18 @@ class _SettingsPageState extends State<SettingsPage> {
           onChanged: (bool value) {
             setState(() {
               _mobileData = value;
-              _updateSetting("mobileData", _mobileData);
             });
           },
         ),
         SwitchListTile(
           title:
-          Text('Using Folder ${_folderMode ? "Include" : "Exclude"} List'),
+              Text('Using Folder ${_folderMode ? "Include" : "Exclude"} List'),
           subtitle: Text(
               'Tap to use folder ${_folderMode ? "exclude" : "include"} mode'),
           value: _folderMode,
           onChanged: (bool value) {
             setState(() {
               _folderMode = value;
-              _updateSetting("folderMode", _folderMode);
             });
           },
         ),
@@ -303,7 +271,9 @@ class _SettingsPageState extends State<SettingsPage> {
           trailing: IconButton(
               icon: const Icon(Icons.add),
               onPressed: () {
+                setState(() {
                   pickFolder();
+                });
               }),
         ),
         Column(
@@ -318,7 +288,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 onPressed: () {
                   setState(() {
                     _folders.removeAt(index);
-                    _updateSetting("folders", _folders);
                   });
                 },
               ),
@@ -330,12 +299,12 @@ class _SettingsPageState extends State<SettingsPage> {
           padding: EdgeInsets.all(8.0),
           child: Center(
               child: Text(
-                'Image Settings',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 100, 100, 100)),
-              )),
+            'Image Settings',
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 100, 100, 100)),
+          )),
         ),
         ListTile(
           title: const Text('Compression Strength'),
@@ -351,7 +320,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 onChanged: (double value) {
                   setState(() {
                     _compressionStrength = value;
-                    _updateSetting("compressionStrength", _compressionStrength);
                   });
                 },
               ),
@@ -364,12 +332,12 @@ class _SettingsPageState extends State<SettingsPage> {
           padding: EdgeInsets.all(8.0),
           child: Center(
               child: Text(
-                'Other',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 100, 100, 100)),
-              )),
+            'Other',
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 100, 100, 100)),
+          )),
         ),
         ListTile(
           leading: const Icon(Icons.info),
@@ -390,7 +358,7 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         title:
-        const Text("Settings Page", style: TextStyle(color: Colors.white)),
+            const Text("Settings Page", style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: settingsOptions(context),
