@@ -30,36 +30,6 @@ class _GalleryPageState extends State<GalleryPage> {
   }
 
   Future<void> ransackFiles() async {
-    // print("Started ransack");
-    //
-    // Stopwatch t = Stopwatch()..start();
-    //
-    // print("Getting external directory");
-    // // Get the directory where your app can store files
-    // final directory = await getExternalStorageDirectory();
-    //
-    // print("Listing files");
-    // // List all files in the directory
-    // final dir = Directory(directory?.path ?? '');
-    // // final dir = Directory("/storage/emulated/0");
-    //
-    // print("Found dir ${dir.path}");
-    //
-    // List<FileSystemEntity> files = dir.listSync(recursive: true, followLinks: false);
-    //
-    // print("Filtering");
-    // // Filter files by the specified extension
-    // List<FileSystemEntity> filteredFiles = files.where((file) {
-    //   return file is File && file.path.endsWith(".jpg");
-    // }).toList();
-    //
-    // t.stop();
-    //
-    // print("Found files in ${t.elapsed.inMilliseconds}ms");
-    //
-    // for (var item in filteredFiles) {
-    //   print(item.path);
-    // }
     print("Start");
 
     setState(() {
