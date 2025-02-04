@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "TODO.md",
+                "file": "Frontend/UI/Settings Page.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "TODO"
+              "title": "Settings Page"
             }
           }
         ]
@@ -163,14 +163,17 @@
       "canvas:Create new canvas": false,
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
-      "command-palette:Open command palette": false
+      "command-palette:Open command palette": false,
+      "obsidian-excalidraw-plugin:Create new drawing": false
     }
   },
   "active": "775eacc3922b3645",
   "lastOpenFiles": [
-    "Backend/General Ideas.md",
+    "Frontend/UI/UI.md",
+    "Frontend/UI/Settings Page.md",
+    "Frontend/UI",
     "TODO.md",
-    "Frontend/UI.md",
+    "Backend/General Ideas.md",
     "Backend",
     "Frontend",
     "The NOTE.md",

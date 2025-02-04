@@ -7,6 +7,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:permission_handler/permission_handler.dart';
 // import 'package:media_store_plus/media_store_plus.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
+import 'package:path/path.dart' as path;
 
 enum GalleryType { local, serverOnly }
 
@@ -20,12 +21,13 @@ class GalleryPage extends StatefulWidget {
 }
 
 class _GalleryPageState extends State<GalleryPage> {
-  List<Widget>? folders;
-  List<String>? imageUris;
+  List<Widget>? _folders;
+  List<String>? _imageUris;
+  String? _selectedFolder;
 
   @override
   void initState() {
-    loadFolders();
+    ransackFiles();
     super.initState();
   }
 
@@ -33,7 +35,7 @@ class _GalleryPageState extends State<GalleryPage> {
     print("Start");
 
     setState(() {
-      imageUris = null;
+      _imageUris = null;
     });
 
     Stopwatch s = Stopwatch()..start();
@@ -41,7 +43,7 @@ class _GalleryPageState extends State<GalleryPage> {
     const platform = MethodChannel('com.example.pheco/channel');
     try {
       final List<dynamic> imagesU =
-          await platform.invokeMethod('getImages', {'count': 1000});
+          await platform.invokeMethod('getImages');
       List<String> images = [];
 
       for (var i in imagesU) {
@@ -64,7 +66,7 @@ class _GalleryPageState extends State<GalleryPage> {
       // }
 
       setState(() {
-        imageUris = images;
+        _imageUris = images;
       });
 
       print("State set");
@@ -79,14 +81,54 @@ class _GalleryPageState extends State<GalleryPage> {
       print(file.lengthSync());
       print(result?.length);
 
-      final ratio = (result!.length.toDouble()) / (file.lengthSync().toDouble());
+      final ratio =
+          (result!.length.toDouble()) / (file.lengthSync().toDouble());
       print("Ratio: $ratio");
 
       print("Compression done");
 
-      print("Saving file");
-      saveFile(result, "compress.pheco.jpg");
+      List<Widget> folderWidgets = [
+        ListTile(
+          leading: const Icon(Icons.image),
+          title: const Text("All Images"),
+          onTap: () {
+            setState(() {
+              _selectedFolder = null;
+            });
+            Navigator.pop(context);
+          })
+      ];
+      Set<String> folderPaths = {};
 
+      for (var p in images) {
+        folderPaths.add(File(p).parent.path);
+      }
+
+      for (var f in folderPaths) {
+        print(f);
+        folderWidgets.add(ListTile(
+            leading: const Icon(Icons.folder),
+            title: Text(path.basename(f)),
+            subtitle: Text(f),
+            onTap: () {
+              setState(() {
+                _selectedFolder = f;
+              });
+              Navigator.pop(context);
+            }));
+      }
+
+      if (mounted) {
+        setState(() {
+          _folders = folderWidgets;
+        });
+        print("Set folder list");
+      } else {
+        print("Failed to set folder list as widget no longer exists");
+      }
+
+      // print("Saving file");
+      // saveFile(result, "compress.pheco.jpg");
     } on PlatformException catch (e) {
       print("Failed to get images: '${e.message}'.");
     }
@@ -122,7 +164,7 @@ class _GalleryPageState extends State<GalleryPage> {
   String getTitle() {
     switch (widget.type) {
       case GalleryType.local:
-        return "Local Gallery";
+        return "Local Gallery - ${(_selectedFolder == null) ? "All Images" : path.basename(_selectedFolder!)}";
       case GalleryType.serverOnly:
         return "Server-Only Gallery";
     }
@@ -140,38 +182,15 @@ class _GalleryPageState extends State<GalleryPage> {
     ));
   }
 
-  Future<void> loadFolders() async {
-    print("Async loading folders...");
-    await Future.delayed(const Duration(seconds: 5));
-    List<Widget> sampleFolders = [];
-
-    for (int i = 0; i < 100; i++) {
-      sampleFolders.add(ListTile(
-          leading: const Icon(Icons.folder),
-          title: Text('Folder $i'),
-          onTap: () {
-            Navigator.pop(context);
-          }));
-    }
-
-    if (mounted) {
-      setState(() {
-        folders = sampleFolders;
-      });
-      print("Set folder list");
-    } else {
-      print("Failed to set folder list as widget no longer exists");
-    }
-  }
-
   Widget drawer(BuildContext context) {
     List<Widget> dFolders;
 
-    dFolders = folders ??
+    dFolders = _folders ??
         [
           const ListTile(
             leading: Icon(Icons.folder),
             title: Text('Loading folders...'),
+            enabled: false,
           )
         ];
 
@@ -206,6 +225,48 @@ class _GalleryPageState extends State<GalleryPage> {
     );
   }
 
+  Widget galleryContent(BuildContext context) {
+    return Center(
+      child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: (_imageUris == null)
+              ? <Widget>[
+            const Text(
+              'Gallery content will go here',
+            ),
+            Text(
+              'Sit tight',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+          ]
+              : <Widget>[
+            Expanded(
+                child: CustomScrollView(
+                  primary: false,
+                  slivers: <Widget>[
+                    SliverPadding(
+                      padding: const EdgeInsets.all(20),
+                      sliver: SliverGrid.count(
+                          crossAxisSpacing: 5,
+                          mainAxisSpacing: 5,
+                          crossAxisCount: 2,
+                          children: _imageUris!.where((e) { return _selectedFolder == null ? true : (File(e).parent.path == _selectedFolder); }).map((e) {
+                            return Container(
+                              padding: const EdgeInsets.all(4),
+                              color: Colors.grey[300],
+                              child: Image.file(
+                                File(e),
+                                fit: BoxFit.cover,
+                              ),
+                            );
+                          }).toList()),
+                    ),
+                  ],
+                ))
+          ]),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -218,52 +279,14 @@ class _GalleryPageState extends State<GalleryPage> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       drawer: drawer(context),
-      body: Center(
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: (imageUris == null)
-                ? <Widget>[
-                    const Text(
-                      'Gallery content will go here',
-                    ),
-                    Text(
-                      'Sit tight',
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                  ]
-                : <Widget>[
-                    Expanded(
-                        child: CustomScrollView(
-                      primary: false,
-                      slivers: <Widget>[
-                        SliverPadding(
-                          padding: const EdgeInsets.all(20),
-                          sliver: SliverGrid.count(
-                              crossAxisSpacing: 10,
-                              mainAxisSpacing: 10,
-                              crossAxisCount: 2,
-                              children: imageUris!.map((e) {
-                                return Container(
-                                  padding: const EdgeInsets.all(8),
-                                  color: Colors.green[100],
-                                  child: Image.file(
-                                    File(e),
-                                    fit: BoxFit.cover,
-                                  ),
-                                );
-                              }).toList()),
-                        ),
-                      ],
-                    ))
-                  ]),
-      ),
+      body: galleryContent(context),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           print("Button");
           ransackFiles();
         },
         tooltip: 'Ransack',
-        child: const Icon(Icons.folder),
+        child: const Icon(Icons.refresh),
       ),
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
