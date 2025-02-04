@@ -1,3 +1,4 @@
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,6 +18,7 @@ class GalleryPage extends StatefulWidget {
 
 class _GalleryPageState extends State<GalleryPage> {
   List<Widget>? folders;
+  List<String>? imageUris;
 
   @override
   void initState() {
@@ -56,11 +58,17 @@ class _GalleryPageState extends State<GalleryPage> {
     //   print(item.path);
     // }
     print("Start");
+
+    setState(() {
+      imageUris = null;
+    });
+
     Stopwatch s = Stopwatch()..start();
 
     const platform = MethodChannel('com.example.pheco/channel');
     try {
-      final List<dynamic> imagesU = await platform.invokeMethod('getImages');
+      final List<dynamic> imagesU =
+          await platform.invokeMethod('getImages', {'count': 1000});
       List<String> images = [];
 
       for (var i in imagesU) {
@@ -68,12 +76,28 @@ class _GalleryPageState extends State<GalleryPage> {
       }
 
       print("Images:\n${images.length}");
+      print("Sample:\n${images[0]}");
+
+      s.stop();
+
+      print("Done - ${s.elapsedMilliseconds}ms");
+
+      // var d = await mediaStorePlugin.getFilePathFromUri(uriString: images[0]);
+      // print(d);
+
+      // List<String> imagesM = [];
+      // for (var i in images) {
+      //   imagesM.add((await mediaStorePlugin.getFilePathFromUri(uriString: i))!);
+      // }
+
+      setState(() {
+        imageUris = images;
+      });
+
+      print("State set");
     } on PlatformException catch (e) {
       print("Failed to get images: '${e.message}'.");
     }
-    s.stop();
-
-    print("Done - ${s.elapsedMilliseconds}ms");
   }
 
   String getTitle() {
@@ -177,17 +201,42 @@ class _GalleryPageState extends State<GalleryPage> {
       drawer: drawer(context),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'Gallery content will go here',
-            ),
-            Text(
-              'Sit tight',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: (imageUris == null)
+                ? <Widget>[
+                    const Text(
+                      'Gallery content will go here',
+                    ),
+                    Text(
+                      'Sit tight',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                  ]
+                : <Widget>[
+                    Expanded(
+                        child: CustomScrollView(
+                      primary: false,
+                      slivers: <Widget>[
+                        SliverPadding(
+                          padding: const EdgeInsets.all(20),
+                          sliver: SliverGrid.count(
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                              crossAxisCount: 2,
+                              children: imageUris!.map((e) {
+                                return Container(
+                                  padding: const EdgeInsets.all(8),
+                                  color: Colors.green[100],
+                                  child: Image.file(
+                                    File(e),
+                                    fit: BoxFit.cover,
+                                  ),
+                                );
+                              }).toList()),
+                        ),
+                      ],
+                    ))
+                  ]),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
