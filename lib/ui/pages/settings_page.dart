@@ -222,7 +222,7 @@ class _SettingsPageState extends State<SettingsPage> {
           },
         ),
         ListTile(
-          title: const Text('Add Folder'),
+          title: Text('Add Folder to ${_folderMode ? "Include" : "Exclude"}'),
           trailing: IconButton(
               icon: const Icon(Icons.add),
               onPressed: () {
