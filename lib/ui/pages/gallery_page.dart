@@ -1,12 +1,8 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:media_store_plus/media_store_plus.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:pheco/main.dart';
+// import 'package:media_store_plus/media_store_plus.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 enum GalleryType { local, serverOnly }
 
@@ -59,13 +55,25 @@ class _GalleryPageState extends State<GalleryPage> {
     // for (var item in filteredFiles) {
     //   print(item.path);
     // }
-    // const platform = MethodChannel('com.example.pheco/media');
-    // try {
-    //     final List<dynamic> images = await platform.invokeMethod('getImages');
-    //     print("Images: $images");
-    //   } on PlatformException catch (e) {
-    //     print("Failed to get images: '${e.message}'.");
-    // }
+    print("Start");
+    Stopwatch s = Stopwatch()..start();
+
+    const platform = MethodChannel('com.example.pheco/channel');
+    try {
+      final List<dynamic> imagesU = await platform.invokeMethod('getImages');
+      List<String> images = [];
+
+      for (var i in imagesU) {
+        images.add(i.toString());
+      }
+
+      print("Images:\n${images.length}");
+    } on PlatformException catch (e) {
+      print("Failed to get images: '${e.message}'.");
+    }
+    s.stop();
+
+    print("Done - ${s.elapsedMilliseconds}ms");
   }
 
   String getTitle() {
