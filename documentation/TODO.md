@@ -1,0 +1,4 @@
+- [x] Load arbitrary images from disk and display them
+- [ ] Compress and image
+- [ ] Save compressed image to disk alongside uncompressed
+- [ ] (Maybe) Try editing image metadata
