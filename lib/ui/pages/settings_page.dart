@@ -390,7 +390,7 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         title:
-        const Text("Settings Page", style: TextStyle(color: Colors.white)),
+        const Text("Settings", style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: settingsOptions(context),
