@@ -25,9 +25,12 @@ class _SettingsPageState extends State<SettingsPage> {
     'Monthly'
   ];
   final TextEditingController _localIpFieldController = TextEditingController();
-  final TextEditingController _publicIpFieldController = TextEditingController();
-  final TextEditingController _usernameFieldController = TextEditingController();
-  final TextEditingController _passwordFieldController = TextEditingController();
+  final TextEditingController _publicIpFieldController =
+      TextEditingController();
+  final TextEditingController _usernameFieldController =
+      TextEditingController();
+  final TextEditingController _passwordFieldController =
+      TextEditingController();
   bool _hidePassword = true;
   double _compressionStrength = 95;
 

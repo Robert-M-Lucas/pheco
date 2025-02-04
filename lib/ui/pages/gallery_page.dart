@@ -42,8 +42,7 @@ class _GalleryPageState extends State<GalleryPage> {
 
     const platform = MethodChannel('com.example.pheco/channel');
     try {
-      final List<dynamic> imagesU =
-          await platform.invokeMethod('getImages');
+      final List<dynamic> imagesU = await platform.invokeMethod('getImages');
       List<String> images = [];
 
       for (var i in imagesU) {
@@ -89,14 +88,14 @@ class _GalleryPageState extends State<GalleryPage> {
 
       List<Widget> folderWidgets = [
         ListTile(
-          leading: const Icon(Icons.image),
-          title: const Text("All Images"),
-          onTap: () {
-            setState(() {
-              _selectedFolder = null;
-            });
-            Navigator.pop(context);
-          })
+            leading: const Icon(Icons.image),
+            title: const Text("All Images"),
+            onTap: () {
+              setState(() {
+                _selectedFolder = null;
+              });
+              Navigator.pop(context);
+            })
       ];
       Set<String> folderPaths = {};
 
@@ -231,39 +230,43 @@ class _GalleryPageState extends State<GalleryPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: (_imageUris == null)
               ? <Widget>[
-            const Text(
-              'Gallery content will go here',
-            ),
-            Text(
-              'Sit tight',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ]
+                  const Text(
+                    'Gallery content will go here',
+                  ),
+                  Text(
+                    'Sit tight',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                ]
               : <Widget>[
-            Expanded(
-                child: CustomScrollView(
-                  primary: false,
-                  slivers: <Widget>[
-                    SliverPadding(
-                      padding: const EdgeInsets.all(20),
-                      sliver: SliverGrid.count(
-                          crossAxisSpacing: 5,
-                          mainAxisSpacing: 5,
-                          crossAxisCount: 2,
-                          children: _imageUris!.where((e) { return _selectedFolder == null ? true : (File(e).parent.path == _selectedFolder); }).map((e) {
-                            return Container(
-                              padding: const EdgeInsets.all(4),
-                              color: Colors.grey[300],
-                              child: Image.file(
-                                File(e),
-                                fit: BoxFit.cover,
-                              ),
-                            );
-                          }).toList()),
-                    ),
-                  ],
-                ))
-          ]),
+                  Expanded(
+                      child: CustomScrollView(
+                    primary: false,
+                    slivers: <Widget>[
+                      SliverPadding(
+                        padding: const EdgeInsets.all(20),
+                        sliver: SliverGrid.count(
+                            crossAxisSpacing: 5,
+                            mainAxisSpacing: 5,
+                            crossAxisCount: 2,
+                            children: _imageUris!.where((e) {
+                              return _selectedFolder == null
+                                  ? true
+                                  : (File(e).parent.path == _selectedFolder);
+                            }).map((e) {
+                              return Container(
+                                padding: const EdgeInsets.all(4),
+                                color: Colors.grey[300],
+                                child: Image.file(
+                                  File(e),
+                                  fit: BoxFit.cover,
+                                ),
+                              );
+                            }).toList()),
+                      ),
+                    ],
+                  ))
+                ]),
     );
   }
 
