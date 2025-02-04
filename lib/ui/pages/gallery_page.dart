@@ -49,8 +49,8 @@ class _GalleryPageState extends State<GalleryPage> {
         images.add(i.toString());
       }
 
-      print("Images:\n${images.length}");
-      print("Sample:\n${images[0]}");
+      // print("Images:\n${images.length}");
+      // print("Sample:\n${images[0]}");
 
       s.stop();
 
@@ -72,19 +72,19 @@ class _GalleryPageState extends State<GalleryPage> {
 
       print("Testing compression");
 
-      File file = File(images[12]);
-      var result = await FlutterImageCompress.compressWithFile(
-        file.absolute.path,
-        quality: 80,
-      );
-      print(file.lengthSync());
-      print(result?.length);
+      // File file = File(images[12]);
+      // var result = await FlutterImageCompress.compressWithFile(
+      //   file.absolute.path,
+      //   quality: 80,
+      // );
+      // print(file.lengthSync());
+      // print(result?.length);
 
-      final ratio =
-          (result!.length.toDouble()) / (file.lengthSync().toDouble());
-      print("Ratio: $ratio");
+      // final ratio =
+      //     (result!.length.toDouble()) / (file.lengthSync().toDouble());
+      // print("Ratio: $ratio");
 
-      print("Compression done");
+      // print("Compression done");
 
       List<Widget> folderWidgets = [
         ListTile(
