@@ -1,8 +1,11 @@
 import 'dart:convert';
 
 import 'package:dartssh2/dartssh2.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:pheco/ui/pages/about_page.dart';
+import 'package:path/path.dart' as path;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -33,6 +36,8 @@ class _SettingsPageState extends State<SettingsPage> {
       TextEditingController();
   bool _hidePassword = true;
   double _compressionStrength = 95;
+  final List<String> _folders = [];
+  bool _folderMode = false; // False is exclude
 
   Future<void> serverConnect() async {
     print("Connecting to server");
@@ -56,6 +61,18 @@ class _SettingsPageState extends State<SettingsPage> {
     await file.writeBytes(utf8.encode('hello there!'));
     await file.close();
     print("File written");
+  }
+
+  Future<void> pickFolder() async {
+    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+
+    if (selectedDirectory != null) {
+      setState(() {
+        _folders.add(selectedDirectory);
+      });
+    } else {
+      print('Folder selection canceled.');
+    }
   }
 
   Widget settingsOptions(BuildContext context) {
@@ -191,6 +208,46 @@ class _SettingsPageState extends State<SettingsPage> {
               _mobileData = value;
             });
           },
+        ),
+        SwitchListTile(
+          title:
+              Text('Using Folder ${_folderMode ? "Include" : "Exclude"} List'),
+          subtitle: Text(
+              'Tap to use folder ${_folderMode ? "exclude" : "include"} mode'),
+          value: _folderMode,
+          onChanged: (bool value) {
+            setState(() {
+              _folderMode = value;
+            });
+          },
+        ),
+        ListTile(
+          title: const Text('Add Folder'),
+          trailing: IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () {
+                setState(() {
+                  pickFolder();
+                });
+              }),
+        ),
+        Column(
+          children: _folders.asMap().entries.map((entry) {
+            int index = entry.key;
+            String folder = entry.value;
+            return ListTile(
+              title: Text(path.basename(folder)),
+              subtitle: Text(folder),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: () {
+                  setState(() {
+                    _folders.removeAt(index);
+                  });
+                },
+              ),
+            );
+          }).toList(),
         ),
         const Divider(),
         const Padding(
