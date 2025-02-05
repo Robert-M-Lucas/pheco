@@ -24,7 +24,7 @@ class _GalleryPageState extends State<GalleryPage> {
 
   @override
   void initState() {
-    loadFiles();
+    // loadFiles();
     super.initState();
   }
 

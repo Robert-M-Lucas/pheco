@@ -17,6 +17,9 @@ void main() async {
   // It will use MediaStore for writing files from API level 30 or use java File lower than 30
   List<Permission> permissions = [
     Permission.storage,
+    // Permission.photos,
+    // Permission.audio,
+    // Permission.videos
   ];
 
   // if ((await mediaStorePlugin.getPlatformSDKInt()) >= 33) {
