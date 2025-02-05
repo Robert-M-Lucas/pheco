@@ -4,8 +4,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pheco/ui/pages/run_page.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
 import 'package:path/path.dart' as path;
+import 'package:pheco/ui/shared/main_bottom_bar.dart';
 
 enum GalleryType { local, serverOnly }
 
@@ -25,42 +27,28 @@ class _GalleryPageState extends State<GalleryPage> {
 
   @override
   void initState() {
-    ransackFiles();
+    loadFiles();
     super.initState();
   }
 
-  Future<void> ransackFiles() async {
-    print("Start");
-
+  Future<void> loadFiles() async {
     setState(() {
       _imageUris = null;
     });
 
-    Stopwatch s = Stopwatch()..start();
-
     const platform = MethodChannel('com.example.pheco/channel');
     try {
+      print("Getting image list");
+      Stopwatch s2 = Stopwatch()..start();
       final List<dynamic> imagesU = await platform.invokeMethod('getImages');
+      s2.stop();
+      print("Done - ${s2.elapsedMilliseconds}ms");
+
       List<String> images = [];
 
       for (var i in imagesU) {
         images.add(i.toString());
       }
-
-      // print("Images:\n${images.length}");
-      // print("Sample:\n${images[0]}");
-
-      s.stop();
-
-      print("Done - ${s.elapsedMilliseconds}ms");
-
-      // var d = await mediaStorePlugin.getFilePathFromUri(uriString: images[0]);
-      // print(d);
-
-      // List<String> imagesM = [];
-      // for (var i in images) {
-      //   imagesM.add((await mediaStorePlugin.getFilePathFromUri(uriString: i))!);
-      // }
 
       setState(() {
         _imageUris = images;
@@ -68,22 +56,7 @@ class _GalleryPageState extends State<GalleryPage> {
 
       print("State set");
 
-      print("Testing compression");
-
-      // File file = File(images[12]);
-      // var result = await FlutterImageCompress.compressWithFile(
-      //   file.absolute.path,
-      //   quality: 80,
-      // );
-      // print(file.lengthSync());
-      // print(result?.length);
-
-      // final ratio =
-      //     (result!.length.toDouble()) / (file.lengthSync().toDouble());
-      // print("Ratio: $ratio");
-
-      // print("Compression done");
-
+      print("Generating Folders");
       List<Widget> folderWidgets = [
         ListTile(
             leading: const Icon(Icons.image),
@@ -167,18 +140,6 @@ class _GalleryPageState extends State<GalleryPage> {
     }
   }
 
-  void navigateToOther(GalleryType other) {
-    Navigator.of(context).pushReplacement(PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) =>
-          GalleryPage(type: other),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        final tween = Tween(begin: 0.0, end: 1.0);
-        final opacityAnimation = animation.drive(tween);
-        return FadeTransition(opacity: opacityAnimation, child: child);
-      },
-    ));
-  }
-
   Widget drawer(BuildContext context) {
     List<Widget> dFolders;
 
@@ -252,9 +213,13 @@ class _GalleryPageState extends State<GalleryPage> {
                                   ? true
                                   : (File(e).parent.path == _selectedFolder);
                             }).map((e) {
+                              final split = e.split(".");
+                              final pheco = split.length > 2 &&
+                                  split[split.length - 2] == "pheco";
                               return Container(
                                 padding: const EdgeInsets.all(4),
-                                color: Colors.grey[300],
+                                color:
+                                    pheco ? Colors.green[300] : Colors.red[300],
                                 child: Image.file(
                                   File(e),
                                   fit: BoxFit.cover,
@@ -271,57 +236,24 @@ class _GalleryPageState extends State<GalleryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        title: Text(
-          getTitle(),
-          style: const TextStyle(color: Colors.white),
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          title: Text(
+            getTitle(),
+            style: const TextStyle(color: Colors.white),
+          ),
+          iconTheme: const IconThemeData(color: Colors.white),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      drawer: drawer(context),
-      body: galleryContent(context),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          print("Button");
-          ransackFiles();
-        },
-        tooltip: 'Ransack',
-        child: const Icon(Icons.refresh),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8.0,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Expanded(
-              child: SizedBox.expand(
-                child: IconButton(
-                  icon: const Icon(Icons.home, size: 30),
-                  onPressed: () {
-                    if (widget.type != GalleryType.local) {
-                      navigateToOther(GalleryType.local);
-                    }
-                  },
-                ),
-              ),
-            ),
-            Expanded(
-              child: SizedBox.expand(
-                child: IconButton(
-                  icon: const Icon(Icons.storage, size: 30),
-                  onPressed: () {
-                    if (widget.type != GalleryType.serverOnly) {
-                      navigateToOther(GalleryType.serverOnly);
-                    }
-                  },
-                ),
-              ),
-            ),
-          ],
+        drawer: drawer(context),
+        body: galleryContent(context),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            print("Button");
+            loadFiles();
+          },
+          tooltip: 'Ransack',
+          child: const Icon(Icons.refresh),
         ),
-      ),
-    );
+        bottomNavigationBar: MainBottomBar(type: widget.type, enabled: true,));
   }
 }

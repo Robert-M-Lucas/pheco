@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:pheco/ui/pages/about_page.dart';
 import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,11 +29,11 @@ class _SettingsPageState extends State<SettingsPage> {
   ];
   final TextEditingController _localIpFieldController = TextEditingController();
   final TextEditingController _publicIpFieldController =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController _usernameFieldController =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController _passwordFieldController =
-  TextEditingController();
+      TextEditingController();
   bool _hidePassword = true;
   double _compressionStrength = 40;
   List<String> _folders = [];
@@ -49,7 +50,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final keys = _sp!.getKeys();
 
     final prefsMap = <String, dynamic>{};
-    for(String key in keys) {
+    for (String key in keys) {
       prefsMap[key] = _sp!.get(key);
     }
 
@@ -63,7 +64,8 @@ class _SettingsPageState extends State<SettingsPage> {
     final publicIpFieldControllerT = await _getOrDefaultSet('publicIp', '');
     final usernameFieldControllerT = await _getOrDefaultSet('username', '');
     final passwordFieldControllerT = await _getOrDefaultSet('password', '');
-    final compressionStrength = await _getOrDefaultSet('compressionStrength', 40.0);
+    final compressionStrength =
+        await _getOrDefaultSet('compressionStrength', 40.0);
     final folders = await _getOrDefaultSet('folders', <String>[]);
     final folderMode = await _getOrDefaultSet('folderMode', false);
 
@@ -98,25 +100,44 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<T> _getOrDefaultSet<T>(String key, T defaultValue) async {
     if (defaultValue is bool) {
       final val = _sp!.getBool(key);
-      if (val == null) { await _sp!.setBool(key, defaultValue); return defaultValue; }
-      else { return val as T; }
+      if (val == null) {
+        await _sp!.setBool(key, defaultValue);
+        return defaultValue;
+      } else {
+        return val as T;
+      }
     } else if (defaultValue is int) {
       final val = _sp!.getInt(key);
-      if (val == null) { await _sp!.setInt(key, defaultValue); return defaultValue; }
-      else { return val as T; }
+      if (val == null) {
+        await _sp!.setInt(key, defaultValue);
+        return defaultValue;
+      } else {
+        return val as T;
+      }
     } else if (defaultValue is double) {
       final val = _sp!.getDouble(key);
-      if (val == null) { await _sp!.setDouble(key, defaultValue); return defaultValue; }
-      else { return val as T; }
+      if (val == null) {
+        await _sp!.setDouble(key, defaultValue);
+        return defaultValue;
+      } else {
+        return val as T;
+      }
     } else if (defaultValue is String) {
       final val = _sp!.getString(key);
-      if (val == null) { await _sp!.setString(key, defaultValue); return defaultValue; }
-      else { return val as T; }
-    }
-    else if (defaultValue is List<String>) {
+      if (val == null) {
+        await _sp!.setString(key, defaultValue);
+        return defaultValue;
+      } else {
+        return val as T;
+      }
+    } else if (defaultValue is List<String>) {
       final val = _sp!.getStringList(key);
-      if (val == null) { await _sp!.setStringList(key, defaultValue); return defaultValue; }
-      else { return val as T; }
+      if (val == null) {
+        await _sp!.setStringList(key, defaultValue);
+        return defaultValue;
+      } else {
+        return val as T;
+      }
     }
     print(defaultValue.runtimeType);
     return null as T;
@@ -142,12 +163,12 @@ class _SettingsPageState extends State<SettingsPage> {
           padding: EdgeInsets.all(8.0),
           child: Center(
               child: Text(
-                'Server Settings',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 100, 100, 100)),
-              )),
+            'Server Settings',
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 100, 100, 100)),
+          )),
         ),
         ListTile(
           title: const Text('Select Protocol'),
@@ -160,7 +181,7 @@ class _SettingsPageState extends State<SettingsPage> {
               });
             },
             items:
-            _protocolOptions.map<DropdownMenuItem<String>>((String value) {
+                _protocolOptions.map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
                 child: Text(value),
@@ -236,12 +257,12 @@ class _SettingsPageState extends State<SettingsPage> {
           padding: EdgeInsets.all(8.0),
           child: Center(
               child: Text(
-                'Upload Settings',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 100, 100, 100)),
-              )),
+            'Upload Settings',
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 100, 100, 100)),
+          )),
         ),
         ListTile(
           title: const Text('Select Upload Frequency'),
@@ -254,7 +275,7 @@ class _SettingsPageState extends State<SettingsPage> {
               });
             },
             items:
-            _frequencyOptions.map<DropdownMenuItem<String>>((String value) {
+                _frequencyOptions.map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
                 child: Text(value),
@@ -265,7 +286,7 @@ class _SettingsPageState extends State<SettingsPage> {
         SwitchListTile(
           title: const Text('Upload Over Other Networks'),
           subtitle:
-          const Text('Images will be uploaded through other WiFi networks'),
+              const Text('Images will be uploaded through other WiFi networks'),
           value: _otherNetworks,
           onChanged: (bool value) {
             setState(() {
@@ -287,7 +308,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         SwitchListTile(
           title:
-          Text('Using Folder ${_folderMode ? "Include" : "Exclude"} List'),
+              Text('Using Folder ${_folderMode ? "Include" : "Exclude"} List'),
           subtitle: Text(
               'Tap to use folder ${_folderMode ? "exclude" : "include"} mode'),
           value: _folderMode,
@@ -303,7 +324,7 @@ class _SettingsPageState extends State<SettingsPage> {
           trailing: IconButton(
               icon: const Icon(Icons.add),
               onPressed: () {
-                  pickFolder();
+                pickFolder();
               }),
         ),
         Column(
@@ -330,12 +351,12 @@ class _SettingsPageState extends State<SettingsPage> {
           padding: EdgeInsets.all(8.0),
           child: Center(
               child: Text(
-                'Image Settings',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 100, 100, 100)),
-              )),
+            'Image Settings',
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 100, 100, 100)),
+          )),
         ),
         ListTile(
           title: const Text('Compression Strength'),
@@ -364,12 +385,12 @@ class _SettingsPageState extends State<SettingsPage> {
           padding: EdgeInsets.all(8.0),
           child: Center(
               child: Text(
-                'Other',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 100, 100, 100)),
-              )),
+            'Other',
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 100, 100, 100)),
+          )),
         ),
         ListTile(
           leading: const Icon(Icons.info),
@@ -389,11 +410,20 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
-        title:
-        const Text("Settings", style: TextStyle(color: Colors.white)),
+        title: const Text("Settings", style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: settingsOptions(context),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () async {
+      //     print("Refresh Button");
+      //     const platform = MethodChannel('com.example.pheco/channel');
+      //     await platform.invokeMethod('rescanMedia');
+      //     print("Refresh Complete");
+      //   },
+      //   tooltip: 'Ransack',
+      //   child: const Icon(Icons.refresh),
+      // ),
     );
   }
 }

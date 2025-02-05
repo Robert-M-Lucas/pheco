@@ -1,23 +1,28 @@
 package com.example.pheco
 
-import android.content.ContentUris
+import android.content.Context
+import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
-import androidx.core.net.toFile
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
+
 class MainActivity: FlutterActivity() {
 
-    private val CHANNEL = "com.example.pheco/channel"
+    private val channel = "com.example.pheco/channel"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
 
         super.configureFlutterEngine(flutterEngine)
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+//        val updater = FlutterUpdater(flutterEngine, channel);
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channel).setMethodCallHandler { call, result ->
 
             if (call.method == "getImages") {
 
@@ -27,14 +32,21 @@ class MainActivity: FlutterActivity() {
                 val count = call.argument<Int>("count");
                 result.success(getImages(count))
 
-            } else {
+            }
+            else if (call.method == "rescanMedia") {
+                rescanMediaStore(result);
+            }
+            else {
 
                 result.notImplemented()
 
             }
 
         }
+    }
 
+    private fun rescanMediaStore(result: MethodChannel.Result) {
+        MediaScannerHelper(context, "/storage/emulated/0/", result)
     }
 
     private fun getImages(count: Int?): List<String> {
@@ -60,5 +72,40 @@ class MainActivity: FlutterActivity() {
         }
 
         return galleryImagePaths
+    }
+}
+
+// Broken
+//class FlutterUpdater(private val flutterEngine: FlutterEngine, private val channel: String) {
+//    private val uiThreadHandler: Handler = Handler(Looper.getMainLooper())
+//
+//    fun sendUpdate(update: String) {
+//        uiThreadHandler.post {
+//            MethodChannel(flutterEngine.dartExecutor, channel).invokeMethod(
+//                "updateProgress",
+//                update
+//            )
+//        }
+//    }
+//}
+
+class MediaScannerHelper(private val mContext: Context, private val mFilePath: String, private val result: MethodChannel.Result) :
+    MediaScannerConnection.MediaScannerConnectionClient {
+    private val mScanner: MediaScannerConnection?
+
+    init {
+        mScanner = MediaScannerConnection(mContext, this)
+        mScanner.connect()
+
+    }
+
+    override fun onMediaScannerConnected() {
+        mScanner?.scanFile(mFilePath, null)
+    }
+
+    override fun onScanCompleted(path: String, uri: Uri) {
+        Log.d("MediaScanner", "Scan completed for: $path -> Uri: $uri")
+        result.success(path)
+        mScanner?.disconnect()
     }
 }
