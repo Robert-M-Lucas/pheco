@@ -38,11 +38,13 @@ class _MainBottomBarState extends State<MainBottomBar> {
             child: SizedBox.expand(
               child: IconButton(
                 icon: const Icon(Icons.home, size: 30),
-                onPressed: widget.enabled ? () {
-                  if (widget.type != GalleryType.local) {
-                    navigateToOther(GalleryType.local);
-                  }
-                } : null,
+                onPressed: widget.enabled
+                    ? () {
+                        if (widget.type != GalleryType.local) {
+                          navigateToOther(GalleryType.local);
+                        }
+                      }
+                    : null,
               ),
             ),
           ),
@@ -50,11 +52,13 @@ class _MainBottomBarState extends State<MainBottomBar> {
             child: SizedBox.expand(
               child: IconButton(
                 icon: const Icon(Icons.storage, size: 30),
-                onPressed: widget.enabled ? () {
-                  if (widget.type != GalleryType.serverOnly) {
-                    navigateToOther(GalleryType.serverOnly);
-                  }
-                } : null,
+                onPressed: widget.enabled
+                    ? () {
+                        if (widget.type != GalleryType.serverOnly) {
+                          navigateToOther(GalleryType.serverOnly);
+                        }
+                      }
+                    : null,
               ),
             ),
           ),
@@ -62,19 +66,22 @@ class _MainBottomBarState extends State<MainBottomBar> {
             child: SizedBox.expand(
               child: IconButton(
                 icon: const Icon(Icons.play_arrow, size: 30),
-                onPressed: widget.enabled ? () {
-                  Navigator.of(context).pushReplacement(PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        RunPage(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) {
-                      final tween = Tween(begin: 0.0, end: 1.0);
-                      final opacityAnimation = animation.drive(tween);
-                      return FadeTransition(
-                          opacity: opacityAnimation, child: child);
-                    },
-                  ));
-                } : null,
+                onPressed: widget.enabled
+                    ? () {
+                        Navigator.of(context).pushReplacement(PageRouteBuilder(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const RunPage(),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                            final tween = Tween(begin: 0.0, end: 1.0);
+                            final opacityAnimation = animation.drive(tween);
+                            return FadeTransition(
+                                opacity: opacityAnimation, child: child);
+                          },
+                        ));
+                      }
+                    : null,
               ),
             ),
           ),

@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
 import 'package:pheco/ui/shared/main_bottom_bar.dart';
 
@@ -14,7 +17,11 @@ class RunPage extends StatefulWidget {
 
 class _RunPageState extends State<RunPage> {
   final platform = const MethodChannel('com.example.pheco/channel');
-  List<String> _output = [
+  final List<String> _output = [
+    "",
+    "",
+    "",
+    "",
     "",
     "",
     "",
@@ -49,6 +56,104 @@ class _RunPageState extends State<RunPage> {
     super.initState();
   }
 
+  Future<void> recompressFiles() async {
+    consoleText("DEBUG: Only working in testing folder");
+    consoleText("DEBUG: Using fixed compression quality");
+    String folder = "/storage/emulated/0/Pictures/Testing";
+
+    consoleText("| Getting image list");
+    Stopwatch s2 = Stopwatch()..start();
+    final List<dynamic> imagesU = await platform.invokeMethod('getImages');
+    s2.stop();
+    print("Done - ${s2.elapsedMilliseconds}ms");
+
+    consoleText("| Processing ${imagesU.length} images and deleting existing");
+    await Future.delayed(const Duration(milliseconds: 500));
+    List<String> images = [];
+    for (var i in imagesU) {
+      final s = i.toString();
+      if (File(i.toString()).parent.path != folder) {
+        continue;
+      }
+
+      final split = s.split(".");
+      final pheco = split.length > 2 && split[split.length - 2] == "pheco";
+      if (pheco) {
+        consoleText("Removing '$s'");
+        await platform.invokeMethod('deleteMediaFile', {'path': s});
+        continue;
+      }
+
+      images.add(i.toString());
+    }
+
+    consoleText("| Compressing ${images.length} images");
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    for (var i in images) {
+      consoleText("Compressing '$i'");
+      File file = File(i);
+      var result = await FlutterImageCompress.compressWithFile(
+        file.absolute.path,
+        quality: 40,
+      );
+
+      if (result == null) {
+        consoleText("Compression Failed");
+        continue;
+      }
+
+      var split = i.split(".");
+      split.insert(split.length - 1, "pheco");
+      final newName = split.join(".");
+      consoleText("Saving '$newName'");
+      await saveFile(result, newName);
+      await platform.invokeMethod('rescanMedia', {'path': newName});
+    }
+  }
+
+  Future<void> deleteCompressedFiles() async {
+    consoleText("DEBUG: Only working in testing folder");
+    String folder = "/storage/emulated/0/Pictures/Testing";
+
+    consoleText("| Getting image list");
+    Stopwatch s2 = Stopwatch()..start();
+    final List<dynamic> imagesU = await platform.invokeMethod('getImages');
+    s2.stop();
+    consoleText("Done - ${s2.elapsedMilliseconds}ms");
+
+    consoleText("| Processing ${imagesU.length} images and deleting existing");
+    for (var i in imagesU) {
+      final s = i.toString();
+      if (File(i.toString()).parent.path != folder) {
+        continue;
+      }
+
+      final split = s.split(".");
+      final pheco = split.length > 2 && split[split.length - 2] == "pheco";
+      if (pheco) {
+        consoleText("Removing '$s'");
+        await platform.invokeMethod('deleteMediaFile', {'path': s});
+        continue;
+      }
+    }
+  }
+
+  Future<void> saveFile(Uint8List uint8List, String filePath) async {
+    // Request storage permission (needed for Android 10 and below)
+    if (await Permission.storage.request().isDenied) {
+      print("Storage permission denied");
+      return;
+    }
+
+    // Write the file
+    File file = File(filePath);
+    final result = await file.writeAsBytes(uint8List);
+    print(result);
+
+    print("File saved to: $filePath");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,10 +164,12 @@ class _RunPageState extends State<RunPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings), // Settings cog icon
-            onPressed: _runningTask ? null : () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const SettingsPage()));
-            },
+            onPressed: _runningTask
+                ? null
+                : () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => const SettingsPage()));
+                  },
           ),
         ],
       ),
@@ -96,8 +203,34 @@ class _RunPageState extends State<RunPage> {
             enabled: !_runningTask,
             subtitle: const Text(
                 'Replace all existing compressed files with recompressed ones. Recommended after changing compression settings.'),
-            onTap: () {
-              consoleText("> [Not Implemented] Recompress Files");
+            onTap: () async {
+              setState(() {
+                _runningTask = true;
+              });
+              consoleText("> Recompressing Files");
+              await recompressFiles();
+              consoleText("Done!");
+              setState(() {
+                _runningTask = false;
+              });
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.delete_forever),
+            title: const Text('Delete Compressed'),
+            enabled: !_runningTask,
+            subtitle: const Text(
+                'Delete all compressed files. Sets \'Upload\' to \'Manual\' to prevent automatic recompression.'),
+            onTap: () async {
+              setState(() {
+                _runningTask = true;
+              });
+              consoleText("> Deleting Compressed Files");
+              await deleteCompressedFiles();
+              consoleText("Done!");
+              setState(() {
+                _runningTask = false;
+              });
             },
           ),
           ListTile(
@@ -120,27 +253,27 @@ class _RunPageState extends State<RunPage> {
               consoleText("> [Not Implemented] Validate Files");
             },
           ),
-            ListTile(
-              leading: const Icon(Icons.image_search),
-              title: const Text('Rescan MediaStore'),
-              enabled: !_runningTask,
-              subtitle: const Text(
-                  'Rescans the device for new images Android may not have found yet.'),
-              onTap: () async {
-                setState(() {
-                  _runningTask = true;
-                });
-                consoleText("> Rescanning MediaStore (can take up to a minute)");
-                consoleText("Note: This task has no progress indication");
-                Stopwatch s1 = Stopwatch()..start();
-                await platform.invokeMethod('rescanMedia');
-                s1.stop();
-                consoleText("Done - ${s1.elapsedMilliseconds}ms");
-                setState(() {
-                  _runningTask = false;
-                });
-              },
-            ),
+          ListTile(
+            leading: const Icon(Icons.image_search),
+            title: const Text('Rescan MediaStore'),
+            enabled: !_runningTask,
+            subtitle: const Text(
+                'Rescans the device for new images Android may not have found yet.'),
+            onTap: () async {
+              setState(() {
+                _runningTask = true;
+              });
+              consoleText("> Rescanning MediaStore (can take up to a minute)");
+              consoleText("Note: This task has no progress indication");
+              Stopwatch s1 = Stopwatch()..start();
+              await platform.invokeMethod('rescanMedia');
+              s1.stop();
+              consoleText("Done - ${s1.elapsedMilliseconds}ms");
+              setState(() {
+                _runningTask = false;
+              });
+            },
+          ),
           ListTile(
             leading: const Icon(Icons.print),
             title: const Text('Print Test'),
@@ -153,8 +286,10 @@ class _RunPageState extends State<RunPage> {
               consoleText("> Starting print test...");
               await Future.delayed(const Duration(seconds: 1));
               for (var i = 0; i < 100; i++) {
-                consoleText("[PrintTest]: ${Random().nextInt(4294967296)}${Random().nextInt(4294967296)}${Random().nextInt(4294967296)}");
-                await Future.delayed(Duration(milliseconds: Random().nextInt(100)));
+                consoleText(
+                    "[PrintTest]: ${Random().nextInt(4294967296)}${Random().nextInt(4294967296)}${Random().nextInt(4294967296)}");
+                await Future.delayed(
+                    Duration(milliseconds: Random().nextInt(100)));
               }
               await Future.delayed(const Duration(seconds: 2));
               consoleText("Done!");
@@ -169,7 +304,8 @@ class _RunPageState extends State<RunPage> {
           color: Colors.black,
           child: Text(
             _output.join("\n"),
-            style: const TextStyle(color: Colors.white, fontFamily: "monospace"),
+            style: const TextStyle(
+                color: Colors.white, fontFamily: "monospace", fontSize: 11),
             overflow: TextOverflow.clip,
             softWrap: false,
           ),

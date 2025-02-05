@@ -1,10 +1,7 @@
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:pheco/ui/pages/run_page.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
 import 'package:path/path.dart' as path;
 import 'package:pheco/ui/shared/main_bottom_bar.dart';
@@ -102,33 +99,6 @@ class _GalleryPageState extends State<GalleryPage> {
     } on PlatformException catch (e) {
       print("Failed to get images: '${e.message}'.");
     }
-  }
-
-  Future<void> saveFile(Uint8List uint8List, String fileName) async {
-    // Request storage permission (needed for Android 10 and below)
-    if (await Permission.storage.request().isDenied) {
-      print("Storage permission denied");
-      return;
-    }
-
-    // Let the user pick a directory
-    String? outputDir = await FilePicker.platform.getDirectoryPath();
-    if (outputDir == null) {
-      // User canceled the file picker
-      print("User cancelled picking");
-      return;
-    }
-
-    print("Saving...");
-    // Define the full path
-    String filePath = '$outputDir/$fileName';
-
-    // Write the file
-    File file = File(filePath);
-    final result = await file.writeAsBytes(uint8List);
-    print(result);
-
-    print("File saved to: $filePath");
   }
 
   String getTitle() {
@@ -254,6 +224,9 @@ class _GalleryPageState extends State<GalleryPage> {
           tooltip: 'Ransack',
           child: const Icon(Icons.refresh),
         ),
-        bottomNavigationBar: MainBottomBar(type: widget.type, enabled: true,));
+        bottomNavigationBar: MainBottomBar(
+          type: widget.type,
+          enabled: true,
+        ));
   }
 }

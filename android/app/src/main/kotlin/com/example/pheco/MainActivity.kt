@@ -3,8 +3,6 @@ package com.example.pheco
 import android.content.Context
 import android.media.MediaScannerConnection
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
@@ -29,12 +27,19 @@ class MainActivity: FlutterActivity() {
 //                val label = call.argument<String>("label")
 
 // Code to print the label using the SDK
-                val count = call.argument<Int>("count");
+                val count = call.argument<Int>("count")
                 result.success(getImages(count))
 
             }
+            else if (call.method == "deleteMediaFile") {
+                val path = call.argument<String>("path")
+                    ?: throw IllegalArgumentException("Expected path for deleteMediaFile")
+                deleteMediaFile(path)
+                result.success(null)
+            }
             else if (call.method == "rescanMedia") {
-                rescanMediaStore(result);
+                val path = call.argument<String>("path")
+                rescanMediaStore(result, path)
             }
             else {
 
@@ -45,13 +50,14 @@ class MainActivity: FlutterActivity() {
         }
     }
 
-    private fun rescanMediaStore(result: MethodChannel.Result) {
-        MediaScannerHelper(context, "/storage/emulated/0/", result)
+    private fun rescanMediaStore(result: MethodChannel.Result, path: String?) {
+        val path = path ?: "/storage/emulated/0/"
+        MediaScannerHelper(context, path, result)
     }
 
     private fun getImages(count: Int?): List<String> {
 //        val galleryImageUrls = mutableListOf<Uri>()
-        val galleryImagePaths = mutableListOf<String>();
+        val galleryImagePaths = mutableListOf<String>()
         val columns = arrayOf(MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA, MediaStore.Images.Media.DISPLAY_NAME)
         val orderBy = MediaStore.Images.Media.DATE_TAKEN
 
@@ -65,13 +71,23 @@ class MainActivity: FlutterActivity() {
             while (cursor.moveToNext()) {
 //                val id = cursor.getLong(idColumn)
                 val data = cursor.getString(dataColumn)
-                galleryImagePaths.add(data);
+                galleryImagePaths.add(data)
 
 //                galleryImageUrls.add(ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id))
             }
         }
 
         return galleryImagePaths
+    }
+
+    private fun deleteMediaFile(path: String) {
+        val contentResolver = context.contentResolver
+        val uri = MediaStore.Files.getContentUri("external")
+
+        val selection = "${MediaStore.MediaColumns.DATA} = ?"
+        val selectionArgs = arrayOf(path)
+
+        contentResolver.delete(uri, selection, selectionArgs)
     }
 }
 
