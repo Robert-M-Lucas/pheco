@@ -94,8 +94,6 @@ class _GalleryPageState extends State<GalleryPage> {
         print("Failed to set folder list as widget no longer exists");
       }
 
-      // print("Saving file");
-      // saveFile(result, "compress.pheco.jpg");
     } on PlatformException catch (e) {
       print("Failed to get images: '${e.message}'.");
     }
@@ -213,6 +211,15 @@ class _GalleryPageState extends State<GalleryPage> {
             style: const TextStyle(color: Colors.white),
           ),
           iconTheme: const IconThemeData(color: Colors.white),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings), // Settings cog icon
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const SettingsPage()));
+              },
+            ),
+          ],
         ),
         drawer: drawer(context),
         body: galleryContent(context),

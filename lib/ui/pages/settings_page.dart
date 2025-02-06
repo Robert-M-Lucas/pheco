@@ -29,6 +29,8 @@ class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController _localIpFieldController = TextEditingController();
   final TextEditingController _publicIpFieldController =
       TextEditingController();
+  final TextEditingController _serverFolderController =
+  TextEditingController();
   final TextEditingController _usernameFieldController =
       TextEditingController();
   final TextEditingController _passwordFieldController =
@@ -61,6 +63,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final selectedFrequency = await _getOrDefaultSet('frequency', 'Manual');
     final localIpFieldControllerT = await _getOrDefaultSet('localIp', '');
     final publicIpFieldControllerT = await _getOrDefaultSet('publicIp', '');
+    final serverFolderControllerT = await _getOrDefaultSet('serverFolder', '');
     final usernameFieldControllerT = await _getOrDefaultSet('username', '');
     final passwordFieldControllerT = await _getOrDefaultSet('password', '');
     final compressionStrength =
@@ -75,6 +78,7 @@ class _SettingsPageState extends State<SettingsPage> {
       _selectedFrequency = selectedFrequency;
       _localIpFieldController.text = localIpFieldControllerT;
       _publicIpFieldController.text = publicIpFieldControllerT;
+      _serverFolderController.text = serverFolderControllerT;
       _usernameFieldController.text = usernameFieldControllerT;
       _passwordFieldController.text = passwordFieldControllerT;
       _compressionStrength = compressionStrength;
@@ -210,6 +214,19 @@ class _SettingsPageState extends State<SettingsPage> {
             },
             decoration: const InputDecoration(
               hintText: '109.224.200.75:22',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+        ListTile(
+          title: const Text('Server Folder for Image Storage'),
+          subtitle: TextField(
+            controller: _serverFolderController,
+            onChanged: (newVal) {
+              _updateSetting("serverFolder", newVal);
+            },
+            decoration: const InputDecoration(
+              hintText: '/pheco/john',
               border: OutlineInputBorder(),
             ),
           ),
