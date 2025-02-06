@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pheco/ui/pages/gallery_page.dart';
+import 'package:pheco/ui/pages/welcome_page.dart';
 
 // final mediaStorePlugin = MediaStore();
 
@@ -33,11 +34,15 @@ void main() async {
 
   // You have set this otherwise it throws AppFolderNotSetException
   // MediaStore.appFolder = "MediaStorePlugin";
-  runApp(const MyApp());
+
+  final bool showWelcomePage = await shouldShowWelcomePage();
+  runApp(MyApp(showWelcomePage: showWelcomePage));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.showWelcomePage });
+
+  final bool showWelcomePage;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +52,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
       ),
-      home: const GalleryPage(type: GalleryType.local),
+      home: showWelcomePage ? const WelcomePage() : const GalleryPage(type: GalleryType.local),
     );
   }
 }
