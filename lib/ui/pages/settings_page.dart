@@ -434,18 +434,18 @@ class _SettingsPageState extends State<SettingsPage> {
               style: TextButton.styleFrom(
                 textStyle: Theme.of(context).textTheme.labelLarge,
               ),
-              child: const Text('Verify'),
+              child: const Text('Discard'),
               onPressed: () {
-                Navigator.pop(context, false);
+                Navigator.pop(context, true);
               },
             ),
             TextButton(
               style: TextButton.styleFrom(
                 textStyle: Theme.of(context).textTheme.labelLarge,
               ),
-              child: const Text('Discard'),
+              child: const Text('Verify'),
               onPressed: () {
-                Navigator.pop(context, true);
+                Navigator.pop(context, false);
               },
             ),
           ],
