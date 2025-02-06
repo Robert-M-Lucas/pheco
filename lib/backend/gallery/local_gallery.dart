@@ -1,4 +1,3 @@
-
 import 'package:pheco/backend/gallery/gallery_interface.dart';
 
 class LocalGallery implements GalleryInterface {

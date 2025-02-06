@@ -93,7 +93,6 @@ class _GalleryPageState extends State<GalleryPage> {
       } else {
         print("Failed to set folder list as widget no longer exists");
       }
-
     } on PlatformException catch (e) {
       print("Failed to get images: '${e.message}'.");
     }
@@ -157,8 +156,10 @@ class _GalleryPageState extends State<GalleryPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: (_imageUris == null)
               ? <Widget>[
-                Text(
-                    widget.type == GalleryType.local ? 'Device images will go here' : 'Server-only images will go here',
+                  Text(
+                    widget.type == GalleryType.local
+                        ? 'Device images will go here'
+                        : 'Server-only images will go here',
                   ),
                   Text(
                     'Sit tight',

@@ -198,6 +198,16 @@ class _RunPageState extends State<RunPage> {
                     )),
               )),
           ListTile(
+            leading: const Icon(Icons.compress),
+            title: const Text('Compress Files'),
+            enabled: !_runningTask,
+            subtitle: const Text(
+                'Compress uncompressed files and transfer originals to server - this is the action that can be scheduled in the settings.'),
+            onTap: () async {
+              consoleText("> [Not Implemented ] Compress Files");
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.refresh),
             title: const Text('Recompress Files'),
             enabled: !_runningTask,

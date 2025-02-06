@@ -1,4 +1,1 @@
-
-class ServerInterfacer {
-
-}
+class ServerInterfacer {}

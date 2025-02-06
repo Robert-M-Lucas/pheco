@@ -1,4 +1,1 @@
-
-class Compressor {
-
-}
+class Compressor {}

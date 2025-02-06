@@ -29,8 +29,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController _localIpFieldController = TextEditingController();
   final TextEditingController _publicIpFieldController =
       TextEditingController();
-  final TextEditingController _serverFolderController =
-  TextEditingController();
+  final TextEditingController _serverFolderController = TextEditingController();
   final TextEditingController _usernameFieldController =
       TextEditingController();
   final TextEditingController _passwordFieldController =
@@ -460,38 +459,37 @@ class _SettingsPageState extends State<SettingsPage> {
     return PopScope<Object?>(
         canPop: false,
         onPopInvokedWithResult: (bool didPop, Object? result) async {
-      if (didPop) {
-        return;
-      }
-      final bool shouldPop = await _showBackDialog() ?? false;
-      if (context.mounted && shouldPop) {
-        Navigator.pop(context);
-      }
-    },
-    child: Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        title: const Text("Settings", style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: settingsOptions(context),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () async {
-      //     print("Refresh Button");
-      //     const platform = MethodChannel('com.example.pheco/channel');
-      //     await platform.invokeMethod('rescanMedia');
-      //     print("Refresh Complete");
-      //   },
-      //   tooltip: 'Ransack',
-      //   child: const Icon(Icons.refresh),
-      // ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
+          if (didPop) {
+            return;
+          }
+          final bool shouldPop = await _showBackDialog() ?? false;
+          if (context.mounted && shouldPop) {
+            Navigator.pop(context);
+          }
         },
-        tooltip: 'Verify',
-        child: const Icon(Icons.check),
-      ),
-
-    ));
+        child: Scaffold(
+          appBar: AppBar(
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            title:
+                const Text("Settings", style: TextStyle(color: Colors.white)),
+            iconTheme: const IconThemeData(color: Colors.white),
+          ),
+          body: settingsOptions(context),
+          // floatingActionButton: FloatingActionButton(
+          //   onPressed: () async {
+          //     print("Refresh Button");
+          //     const platform = MethodChannel('com.example.pheco/channel');
+          //     await platform.invokeMethod('rescanMedia');
+          //     print("Refresh Complete");
+          //   },
+          //   tooltip: 'Ransack',
+          //   child: const Icon(Icons.refresh),
+          // ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {},
+            tooltip: 'Verify',
+            child: const Icon(Icons.check),
+          ),
+        ));
   }
 }
