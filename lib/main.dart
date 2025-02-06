@@ -1,41 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pheco/backend/gallery/local_gallery.dart';
+import 'package:pheco/backend/gallery/server_gallery.dart';
+import 'package:pheco/backend/settings_store.dart';
 import 'package:pheco/ui/pages/gallery_page.dart';
 import 'package:pheco/ui/pages/welcome_page.dart';
 
-// final mediaStorePlugin = MediaStore();
+late LocalGallery localGallery;
+late ServerGallery serverGallery;
+late SettingsStore settingsStore;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // if (Platform.isAndroid) {
-  //   await MediaStore.ensureInitialized();
-  // }
-  // From API 33, we request photos, audio, videos permission to read these files. This the new way
-  // From API 29, we request storage permission only to read access all files
-  // API lower than 30, we request storage permission to read & write access access all files
 
-  // For writing purpose, we are using [MediaStore] plugin. It will use MediaStore or java File based on API level.
-  // It will use MediaStore for writing files from API level 30 or use java File lower than 30
+  settingsStore = SettingsStore();
+
+  localGallery = LocalGallery();
+  serverGallery = ServerGallery();
+
+  settingsStore.addUpdateListener(localGallery.update);
+  settingsStore.addUpdateListener(serverGallery.update);
+
   List<Permission> permissions = [
     Permission.storage,
-    // Permission.photos,
-    // Permission.audio,
-    // Permission.videos
   ];
-
-  // if ((await mediaStorePlugin.getPlatformSDKInt()) >= 33) {
-  //   permissions.add(Permission.photos);
-  //   permissions.add(Permission.audio);
-  //   permissions.add(Permission.videos);
-  // }
-
   await permissions.request();
-  // we are not checking the status as it is an example app. You should (must) check it in a production app
-
-  // You have set this otherwise it throws AppFolderNotSetException
-  // MediaStore.appFolder = "MediaStorePlugin";
 
   final bool showWelcomePage = await shouldShowWelcomePage();
+
   runApp(MyApp(showWelcomePage: showWelcomePage));
 }
 
