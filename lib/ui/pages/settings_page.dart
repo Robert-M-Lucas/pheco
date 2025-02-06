@@ -421,9 +421,54 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Future<bool?> _showBackDialog() {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Discard Changes?'),
+          content: const Text(
+            'You need to verify your settings values',
+          ),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: const Text('Verify'),
+              onPressed: () {
+                Navigator.pop(context, false);
+              },
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: const Text('Discard'),
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope<Object?>(
+        canPop: false,
+        onPopInvokedWithResult: (bool didPop, Object? result) async {
+      if (didPop) {
+        return;
+      }
+      final bool shouldPop = await _showBackDialog() ?? false;
+      if (context.mounted && shouldPop) {
+        Navigator.pop(context);
+      }
+    },
+    child: Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         title: const Text("Settings", style: TextStyle(color: Colors.white)),
@@ -440,6 +485,13 @@ class _SettingsPageState extends State<SettingsPage> {
       //   tooltip: 'Ransack',
       //   child: const Icon(Icons.refresh),
       // ),
-    );
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+        },
+        tooltip: 'Verify',
+        child: const Icon(Icons.check),
+      ),
+
+    ));
   }
 }
