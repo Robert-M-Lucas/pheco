@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:lorem_ipsum/lorem_ipsum.dart';
 import 'package:pheco/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const int welcomeInfoVersion = 2;
+const int welcomeInfoVersion = 3;
 
 Future<bool> shouldShowWelcomePage() async {
   final sp = await SharedPreferences.getInstance();
@@ -43,16 +44,16 @@ class _WelcomePageState extends State<WelcomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Heading 1',
+                'Overview',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
-              const Text("Paragraph 1"),
-              const Text("Paragraph 2"),
+              Text(loremIpsum(paragraphs: 3)),
+              const Padding(padding: EdgeInsets.all(7.0)),
               Text(
-                'Heading 2',
+                'Compression',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
-              const Text("Paragraph 3"),
+              Text(loremIpsum(paragraphs: 2)),
             ],
           )),
       bottomNavigationBar: BottomAppBar(

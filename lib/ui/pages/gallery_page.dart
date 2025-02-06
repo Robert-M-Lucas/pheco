@@ -24,7 +24,7 @@ class _GalleryPageState extends State<GalleryPage> {
 
   @override
   void initState() {
-    // loadFiles();
+    loadFiles();
     super.initState();
   }
 
@@ -159,8 +159,8 @@ class _GalleryPageState extends State<GalleryPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: (_imageUris == null)
               ? <Widget>[
-                  const Text(
-                    'Gallery content will go here',
+                Text(
+                    widget.type == GalleryType.local ? 'Device images will go here' : 'Server-only images will go here',
                   ),
                   Text(
                     'Sit tight',
