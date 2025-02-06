@@ -39,8 +39,10 @@ void main() async {
   runApp(MyApp(showWelcomePage: showWelcomePage));
 }
 
+const Widget mainPage = GalleryPage(type: GalleryType.local);
+
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.showWelcomePage });
+  const MyApp({super.key, required this.showWelcomePage});
 
   final bool showWelcomePage;
 
@@ -52,7 +54,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
       ),
-      home: showWelcomePage ? const WelcomePage() : const GalleryPage(type: GalleryType.local),
+      home: showWelcomePage ? const WelcomePage() : mainPage,
     );
   }
 }
