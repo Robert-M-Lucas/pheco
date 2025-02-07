@@ -17,7 +17,7 @@ class ServerGallery extends GalleryInterface {
   @override
   void update() {
     // TODO: implement update
-    throw UnimplementedError();
+    // throw UnimplementedError();
   }
 
   @override

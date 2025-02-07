@@ -8,7 +8,8 @@ class LocalGallery extends GalleryInterface {
   List<String>? folders;
   List<String>? activeImages;
   bool updating = false;
-  static const MethodChannel platform = MethodChannel('com.example.pheco/channel');
+  static const MethodChannel platform =
+      MethodChannel('com.example.pheco/channel');
 
   @override
   void initialiseIfUninitialised() async {
@@ -21,7 +22,10 @@ class LocalGallery extends GalleryInterface {
   void update() async {
     updating = true;
 
-    final List<String> tImages = await platform.invokeMethod('getImages');
+    final List<String> tImages =
+        (await platform.invokeMethod('getImages') as List<Object?>).map((e) {
+      return e as String;
+    }).toList();
 
     Set<String> folderPaths = {};
 

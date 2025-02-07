@@ -14,6 +14,21 @@ const List<String> frequencyOptions = [
   'Monthly'
 ];
 
+const String validDataKey = "validData";
+const String otherNetworksKey = "otherNetworks";
+const String mobileDataKey = "mobileData";
+const String protocolKey = "protocol";
+const String frequencyKey = "frequency";
+const String localIpKey = "localIp";
+const String publicIpKey = "publicIp";
+const String serverFolderKey = "serverFolder";
+const String usernameKey = "username";
+const String passwordKey = "password";
+const String compressionQualityKey = "compressionQuality";
+const String folderModeKey = "folderMode";
+const String foldersKey = "folders";
+
+
 class SettingsStore {
   final List<Function()> listeners = [];
 
@@ -44,30 +59,32 @@ class SettingsStore {
   String password() => _password;
   late int _compressionQuality;
   int compressionQuality() => _compressionQuality;
-  late bool _folderMode;
-  bool folderMode() => _folderMode;
-  late List<String> _folders;
-  List<String> folders() => new List<String>.from(_folders);
+  bool? _folderMode;
+  bool folderMode() => _folderMode ?? false;
+  List<String> _folders = [];
+  List<String> folders() => List<String>.from(_folders);
 
 
   Future<void> initialise() async {
-    _validData = _sp.getBool("validData") ?? false;
+    _sp = await SharedPreferences.getInstance();
 
-    await Future.wait([
-      _sp.setBool("validData", true),
-      _sp.setBool("otherNetworks", otherNetworks),
-      _sp.setBool("mobileData", mobileData),
-      _sp.setString("protocol", protocol),
-      _sp.setString("frequency", frequency),
-      _sp.setString("localIp", localIp),
-      _sp.setString("publicIp", publicIp),
-      _sp.setString("serverFolder", serverFolder),
-      _sp.setString("username", username),
-      secureStorage.write(key: 'password', value: password),
-      _sp.setInt("compressionQuality", compressionQuality),
-      _sp.setBool("folderMode", folderMode),
-      _sp.setStringList("folders", folders),
-    ]);
+    _validData = _sp.getBool(validDataKey) ?? false;
+
+    if (_validData) {
+      _otherNetworks = _sp.getBool(otherNetworksKey)!;
+      _mobileData = _sp.getBool(mobileDataKey)!;
+      _protocol = _sp.getString(protocolKey)!;
+      _frequency = _sp.getString(frequencyKey)!;
+      _localIp = _sp.getString(localIpKey)!;
+      _publicIp = _sp.getString(publicIpKey)!;
+      _serverFolder = _sp.getString(serverFolderKey)!;
+      _username = _sp.getString(usernameKey)!;
+      _password = (await secureStorage.read(key: passwordKey))!;
+      _compressionQuality = _sp.getInt(compressionQualityKey)!;
+      _folderMode = _sp.getBool(folderModeKey)!;
+      _folders = _sp.getStringList(foldersKey)!;
+      _initialised = true;
+    }
 
     _updateListeners();
   }
@@ -108,20 +125,21 @@ class SettingsStore {
     }
 
     await Future.wait([
-      _sp.setBool("otherNetworks", otherNetworks),
-      _sp.setBool("mobileData", mobileData),
-      _sp.setString("protocol", protocol),
-      _sp.setString("frequency", frequency),
-      _sp.setString("localIp", localIp),
-      _sp.setString("publicIp", publicIp),
-      _sp.setString("serverFolder", serverFolder),
-      _sp.setString("username", username),
-      secureStorage.write(key: 'password', value: password),
-      _sp.setInt("compressionQuality", compressionQuality),
-      _sp.setBool("folderMode", folderMode),
-      _sp.setStringList("folders", folders),
-      _sp.setBool("validData", true),
+      _sp.setBool(otherNetworksKey, otherNetworks),
+      _sp.setBool(mobileDataKey, mobileData),
+      _sp.setString(protocolKey, protocol),
+      _sp.setString(frequencyKey, frequency),
+      _sp.setString(localIpKey, localIp),
+      _sp.setString(publicIpKey, publicIp),
+      _sp.setString(serverFolderKey, serverFolder),
+      _sp.setString(usernameKey, username),
+      secureStorage.write(key: passwordKey, value: password),
+      _sp.setInt(compressionQualityKey, compressionQuality),
+      _sp.setBool(folderModeKey, folderMode),
+      _sp.setStringList(foldersKey, folders),
+      _sp.setBool(validDataKey, true),
     ]);
+
 
     _otherNetworks = otherNetworks;
     _mobileData = mobileData;
@@ -140,52 +158,6 @@ class SettingsStore {
 
     _updateListeners();
     return null;
-  }
-
-  Future<T> _getOrDefaultSet<T>(String key, T defaultValue) async {
-    if (defaultValue is bool) {
-      final val = _sp.getBool(key);
-      if (val == null) {
-        await _sp.setBool(key, defaultValue);
-        return defaultValue;
-      } else {
-        return val as T;
-      }
-    } else if (defaultValue is int) {
-      final val = _sp.getInt(key);
-      if (val == null) {
-        await _sp.setInt(key, defaultValue);
-        return defaultValue;
-      } else {
-        return val as T;
-      }
-    } else if (defaultValue is double) {
-      final val = _sp.getDouble(key);
-      if (val == null) {
-        await _sp.setDouble(key, defaultValue);
-        return defaultValue;
-      } else {
-        return val as T;
-      }
-    } else if (defaultValue is String) {
-      final val = _sp.getString(key);
-      if (val == null) {
-        await _sp.setString(key, defaultValue);
-        return defaultValue;
-      } else {
-        return val as T;
-      }
-    } else if (defaultValue is List<String>) {
-      final val = _sp.getStringList(key);
-      if (val == null) {
-        await _sp.setStringList(key, defaultValue);
-        return defaultValue;
-      } else {
-        return val as T;
-      }
-    }
-    print(defaultValue.runtimeType);
-    return null as T;
   }
   
   void addUpdateListener(Function() permanentListener) {
