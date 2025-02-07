@@ -1,7 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:pheco/backend/gallery/gallery_interface.dart';
+import 'package:pheco/main.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
 import 'package:path/path.dart' as path;
 import 'package:pheco/ui/shared/main_bottom_bar.dart';
@@ -18,84 +19,24 @@ class GalleryPage extends StatefulWidget {
 }
 
 class _GalleryPageState extends State<GalleryPage> {
-  List<Widget>? _folders;
-  List<String>? _imageUris;
   String? _selectedFolder;
+
+  GalleryInterface gallery() {
+    switch (widget.type) {
+
+      case GalleryType.local:
+        return localGallery;
+      case GalleryType.serverOnly:
+        return serverGallery;
+    }
+  }
 
   @override
   void initState() {
-    loadFiles();
+    // loadFiles();
+    gallery().registerUpdateCallback(() { setState(() {}); }, () { return mounted; });
+    gallery().initialiseIfUninitialised();
     super.initState();
-  }
-
-  Future<void> loadFiles() async {
-    setState(() {
-      _imageUris = null;
-    });
-
-    const platform = MethodChannel('com.example.pheco/channel');
-    try {
-      print("Getting image list");
-      Stopwatch s2 = Stopwatch()..start();
-      final List<dynamic> imagesU = await platform.invokeMethod('getImages');
-      s2.stop();
-      print("Done - ${s2.elapsedMilliseconds}ms");
-
-      List<String> images = [];
-
-      for (var i in imagesU) {
-        images.add(i.toString());
-      }
-
-      setState(() {
-        _imageUris = images;
-      });
-
-      print("State set");
-
-      print("Generating Folders");
-      List<Widget> folderWidgets = [
-        ListTile(
-            leading: const Icon(Icons.image),
-            title: const Text("All Images"),
-            onTap: () {
-              setState(() {
-                _selectedFolder = null;
-              });
-              Navigator.pop(context);
-            })
-      ];
-      Set<String> folderPaths = {};
-
-      for (var p in images) {
-        folderPaths.add(File(p).parent.path);
-      }
-
-      for (var f in folderPaths) {
-        print(f);
-        folderWidgets.add(ListTile(
-            leading: const Icon(Icons.folder),
-            title: Text(path.basename(f)),
-            subtitle: Text(f),
-            onTap: () {
-              setState(() {
-                _selectedFolder = f;
-              });
-              Navigator.pop(context);
-            }));
-      }
-
-      if (mounted) {
-        setState(() {
-          _folders = folderWidgets;
-        });
-        print("Set folder list");
-      } else {
-        print("Failed to set folder list as widget no longer exists");
-      }
-    } on PlatformException catch (e) {
-      print("Failed to get images: '${e.message}'.");
-    }
   }
 
   String getTitle() {
@@ -110,7 +51,18 @@ class _GalleryPageState extends State<GalleryPage> {
   Widget drawer(BuildContext context) {
     List<Widget> dFolders;
 
-    dFolders = _folders ??
+    dFolders = gallery().getFolderList()?.map((f) {
+      return ListTile(
+          leading: const Icon(Icons.folder),
+          title: Text(path.basename(f)),
+          subtitle: Text(f),
+          onTap: () {
+            setState(() {
+              _selectedFolder = f;
+            });
+            Navigator.pop(context);
+          });
+    }).toList() ??
         [
           const ListTile(
             leading: Icon(Icons.folder),
@@ -151,10 +103,11 @@ class _GalleryPageState extends State<GalleryPage> {
   }
 
   Widget galleryContent(BuildContext context) {
+    final imageUris = gallery().getFilesInFolder(_selectedFolder);
     return Center(
       child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: (_imageUris == null)
+          children: (imageUris == null)
               ? <Widget>[
                   Text(
                     widget.type == GalleryType.local
@@ -177,7 +130,7 @@ class _GalleryPageState extends State<GalleryPage> {
                             crossAxisSpacing: 5,
                             mainAxisSpacing: 5,
                             crossAxisCount: 2,
-                            children: _imageUris!.where((e) {
+                            children: imageUris.where((e) {
                               return _selectedFolder == null
                                   ? true
                                   : (File(e).parent.path == _selectedFolder);
@@ -226,10 +179,9 @@ class _GalleryPageState extends State<GalleryPage> {
         body: galleryContent(context),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            print("Button");
-            loadFiles();
+            gallery().update();
           },
-          tooltip: 'Ransack',
+          tooltip: 'Refresh',
           child: const Icon(Icons.refresh),
         ),
         bottomNavigationBar: MainBottomBar(
