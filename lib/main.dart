@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pheco/backend/gallery/local_gallery.dart';
 import 'package:pheco/backend/gallery/server_gallery.dart';
@@ -10,6 +11,12 @@ late LocalGallery localGallery;
 late ServerGallery serverGallery;
 late SettingsStore settingsStore;
 
+AndroidOptions _getAndroidOptions()  {
+  return const AndroidOptions(encryptedSharedPreferences: true);
+}
+
+final secureStorage = FlutterSecureStorage(aOptions: _getAndroidOptions());
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -20,6 +27,8 @@ void main() async {
 
   settingsStore.addUpdateListener(localGallery.update);
   settingsStore.addUpdateListener(serverGallery.update);
+
+  await settingsStore.initialise();
 
   List<Permission> permissions = [
     Permission.storage,

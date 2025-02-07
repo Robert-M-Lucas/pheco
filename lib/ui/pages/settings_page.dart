@@ -1,8 +1,9 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:pheco/backend/settings_store.dart';
+import 'package:pheco/main.dart';
 import 'package:pheco/ui/pages/about_page.dart';
 import 'package:path/path.dart' as path;
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -12,20 +13,12 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  SharedPreferences? _sp;
-
+  bool _verified = false;
   bool _otherNetworks = true;
   bool _mobileData = false;
-  String _protocol = 'SFTP';
-  final List<String> _protocolOptions = ['SFTP', 'SMB'];
-  String _selectedFrequency = 'Manual';
-  final List<String> _frequencyOptions = [
-    'Manual',
-    'Hourly',
-    'Daily',
-    'Weekly',
-    'Monthly'
-  ];
+  String _protocol = protocolOptions[0];
+  String _selectedFrequency = frequencyOptions[0];
+
   final TextEditingController _localIpFieldController = TextEditingController();
   final TextEditingController _publicIpFieldController =
       TextEditingController();
@@ -35,7 +28,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController _passwordFieldController =
       TextEditingController();
   bool _hidePassword = true;
-  double _compressionStrength = 40;
+  double _compressionQuality = 40;
   List<String> _folders = [];
   bool _folderMode = false; // False is exclude
 
@@ -45,44 +38,21 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
   }
 
-  Future<void> loadSettings() async {
-    _sp = await SharedPreferences.getInstance();
-    final keys = _sp!.getKeys();
-
-    final prefsMap = <String, dynamic>{};
-    for (String key in keys) {
-      prefsMap[key] = _sp!.get(key);
-    }
-
-    print(prefsMap);
-
-    final otherNetworks = await _getOrDefaultSet('otherNetworks', true);
-    final mobileData = await _getOrDefaultSet('mobileData', false);
-    final protocol = await _getOrDefaultSet('protocol', 'SFTP');
-    final selectedFrequency = await _getOrDefaultSet('frequency', 'Manual');
-    final localIpFieldControllerT = await _getOrDefaultSet('localIp', '');
-    final publicIpFieldControllerT = await _getOrDefaultSet('publicIp', '');
-    final serverFolderControllerT = await _getOrDefaultSet('serverFolder', '');
-    final usernameFieldControllerT = await _getOrDefaultSet('username', '');
-    final passwordFieldControllerT = await _getOrDefaultSet('password', '');
-    final compressionStrength =
-        await _getOrDefaultSet('compressionStrength', 40.0);
-    final folders = await _getOrDefaultSet('folders', <String>[]);
-    final folderMode = await _getOrDefaultSet('folderMode', false);
-
+  void loadSettings() {
     setState(() {
-      _otherNetworks = otherNetworks;
-      _mobileData = mobileData;
-      _protocol = protocol;
-      _selectedFrequency = selectedFrequency;
-      _localIpFieldController.text = localIpFieldControllerT;
-      _publicIpFieldController.text = publicIpFieldControllerT;
-      _serverFolderController.text = serverFolderControllerT;
-      _usernameFieldController.text = usernameFieldControllerT;
-      _passwordFieldController.text = passwordFieldControllerT;
-      _compressionStrength = compressionStrength;
-      _folders = folders;
-      _folderMode = folderMode;
+      _verified = settingsStore.validData();
+      _otherNetworks = settingsStore.otherNetworks();
+      _mobileData = settingsStore.mobileData();
+      _protocol = settingsStore.protocol();
+      _selectedFrequency = settingsStore.frequency();
+      _localIpFieldController.text = settingsStore.localIp();
+      _publicIpFieldController.text = settingsStore.publicIp();
+      _serverFolderController.text = settingsStore.serverFolder();
+      _usernameFieldController.text = settingsStore.username();
+      _passwordFieldController.text = settingsStore.password();
+      _compressionQuality = settingsStore.compressionQuality() as double;
+      _folders = settingsStore.folders();
+      _folderMode = settingsStore.folderMode();
     });
   }
 
@@ -92,70 +62,35 @@ class _SettingsPageState extends State<SettingsPage> {
     if (selectedDirectory != null) {
       setState(() {
         _folders.add(selectedDirectory);
-        _updateSetting("folders", _folders);
+        _verified = false;
       });
     } else {
       print('Folder selection canceled.');
     }
   }
 
-  Future<T> _getOrDefaultSet<T>(String key, T defaultValue) async {
-    if (defaultValue is bool) {
-      final val = _sp!.getBool(key);
-      if (val == null) {
-        await _sp!.setBool(key, defaultValue);
-        return defaultValue;
-      } else {
-        return val as T;
-      }
-    } else if (defaultValue is int) {
-      final val = _sp!.getInt(key);
-      if (val == null) {
-        await _sp!.setInt(key, defaultValue);
-        return defaultValue;
-      } else {
-        return val as T;
-      }
-    } else if (defaultValue is double) {
-      final val = _sp!.getDouble(key);
-      if (val == null) {
-        await _sp!.setDouble(key, defaultValue);
-        return defaultValue;
-      } else {
-        return val as T;
-      }
-    } else if (defaultValue is String) {
-      final val = _sp!.getString(key);
-      if (val == null) {
-        await _sp!.setString(key, defaultValue);
-        return defaultValue;
-      } else {
-        return val as T;
-      }
-    } else if (defaultValue is List<String>) {
-      final val = _sp!.getStringList(key);
-      if (val == null) {
-        await _sp!.setStringList(key, defaultValue);
-        return defaultValue;
-      } else {
-        return val as T;
-      }
-    }
-    print(defaultValue.runtimeType);
-    return null as T;
-  }
+  Future<String?> verifySettings() async {
+    final result = await settingsStore.setValues(
+        _otherNetworks,
+        _mobileData,
+        _protocol,
+        _selectedFrequency,
+        _localIpFieldController.text,
+        _publicIpFieldController.text,
+        _serverFolderController.text,
+        _usernameFieldController.text,
+        _passwordFieldController.text,
+        _compressionQuality as int,
+        _folderMode,
+        _folders);
 
-  Future<void> _updateSetting(String key, dynamic value) async {
-    _sp ??= await SharedPreferences.getInstance();
-    if (value is bool) {
-      await _sp!.setBool(key, value);
-    } else if (value is String) {
-      await _sp!.setString(key, value);
-    } else if (value is double) {
-      await _sp!.setDouble(key, value);
-    } else if (value is List<String>) {
-      await _sp!.setStringList(key, value);
+    if (result != null) {
+      setState(() {
+        _verified = true;
+      });
     }
+
+    return result;
   }
 
   Widget settingsOptions(BuildContext context) {
@@ -179,11 +114,11 @@ class _SettingsPageState extends State<SettingsPage> {
             onChanged: (String? newValue) {
               setState(() {
                 _protocol = newValue!;
-                _updateSetting("protocol", _protocol);
+                _verified = false;
               });
             },
             items:
-                _protocolOptions.map<DropdownMenuItem<String>>((String value) {
+                protocolOptions.map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
                 child: Text(value),
@@ -195,8 +130,10 @@ class _SettingsPageState extends State<SettingsPage> {
           title: const Text('Local IP with Port'),
           subtitle: TextField(
             controller: _localIpFieldController,
-            onChanged: (newVal) {
-              _updateSetting("localIp", newVal);
+            onChanged: (_) {
+              setState(() {
+                _verified = false;
+              });
             },
             decoration: const InputDecoration(
               hintText: '192.168.1.230:22',
@@ -208,8 +145,10 @@ class _SettingsPageState extends State<SettingsPage> {
           title: const Text('(Optional) Public IP with Port'),
           subtitle: TextField(
             controller: _publicIpFieldController,
-            onChanged: (newVal) {
-              _updateSetting("publicIp", newVal);
+            onChanged: (_) {
+              setState(() {
+                _verified = false;
+              });
             },
             decoration: const InputDecoration(
               hintText: '109.224.200.75:22',
@@ -221,8 +160,10 @@ class _SettingsPageState extends State<SettingsPage> {
           title: const Text('Server Folder for Image Storage'),
           subtitle: TextField(
             controller: _serverFolderController,
-            onChanged: (newVal) {
-              _updateSetting("serverFolder", newVal);
+            onChanged: (_) {
+              setState(() {
+                _verified = false;
+              });
             },
             decoration: const InputDecoration(
               hintText: '/pheco/john',
@@ -234,8 +175,10 @@ class _SettingsPageState extends State<SettingsPage> {
           title: const Text('Username'),
           subtitle: TextField(
             controller: _usernameFieldController,
-            onChanged: (newVal) {
-              _updateSetting("username", newVal);
+            onChanged: (_) {
+              setState(() {
+                _verified = false;
+              });
             },
             decoration: const InputDecoration(
               hintText: 'john_smith',
@@ -244,11 +187,13 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
         ListTile(
-          title: const Text('Password'),
+          title: const Text('Password (optional)'),
           subtitle: TextField(
             controller: _passwordFieldController,
-            onChanged: (newVal) {
-              _updateSetting("password", newVal);
+            onChanged: (_) {
+              setState(() {
+                _verified = false;
+              });
             },
             obscureText: _hidePassword,
             decoration: InputDecoration(
@@ -286,11 +231,11 @@ class _SettingsPageState extends State<SettingsPage> {
             onChanged: (String? newValue) {
               setState(() {
                 _selectedFrequency = newValue!;
-                _updateSetting("frequency", _selectedFrequency);
+                _verified = false;
               });
             },
             items:
-                _frequencyOptions.map<DropdownMenuItem<String>>((String value) {
+                frequencyOptions.map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
                 child: Text(value),
@@ -306,7 +251,7 @@ class _SettingsPageState extends State<SettingsPage> {
           onChanged: (bool value) {
             setState(() {
               _otherNetworks = value;
-              _updateSetting("otherNetworks", _otherNetworks);
+              _verified = false;
             });
           },
         ),
@@ -317,7 +262,7 @@ class _SettingsPageState extends State<SettingsPage> {
           onChanged: (bool value) {
             setState(() {
               _mobileData = value;
-              _updateSetting("mobileData", _mobileData);
+              _verified = false;
             });
           },
         ),
@@ -330,7 +275,7 @@ class _SettingsPageState extends State<SettingsPage> {
           onChanged: (bool value) {
             setState(() {
               _folderMode = value;
-              _updateSetting("folderMode", _folderMode);
+              _verified = false;
             });
           },
         ),
@@ -354,7 +299,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 onPressed: () {
                   setState(() {
                     _folders.removeAt(index);
-                    _updateSetting("folders", _folders);
                   });
                 },
               ),
@@ -374,24 +318,23 @@ class _SettingsPageState extends State<SettingsPage> {
           )),
         ),
         ListTile(
-          title: const Text('Compression Strength'),
+          title: const Text('Compression Quality'),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Slider(
-                value: _compressionStrength,
+                value: _compressionQuality,
                 min: 5,
                 max: 95,
                 divisions: 18,
-                label: '${_compressionStrength.round()}%',
+                label: '${_compressionQuality.round()}%',
                 onChanged: (double value) {
                   setState(() {
-                    _compressionStrength = value;
-                    _updateSetting("compressionStrength", _compressionStrength);
+                    _compressionQuality = value;
                   });
                 },
               ),
-              Text('Selected: ${_compressionStrength.round()}%'),
+              Text('Selected: ${_compressionQuality.round()}%'),
             ],
           ),
         ),
@@ -427,7 +370,7 @@ class _SettingsPageState extends State<SettingsPage> {
         return AlertDialog(
           title: const Text('Discard Changes?'),
           content: const Text(
-            'You need to verify your settings values',
+            'You need to verify and save your settings values',
           ),
           actions: <Widget>[
             TextButton(
@@ -443,7 +386,7 @@ class _SettingsPageState extends State<SettingsPage> {
               style: TextButton.styleFrom(
                 textStyle: Theme.of(context).textTheme.labelLarge,
               ),
-              child: const Text('Verify'),
+              child: const Text('Verify & Save'),
               onPressed: () {
                 Navigator.pop(context, false);
               },
@@ -485,11 +428,15 @@ class _SettingsPageState extends State<SettingsPage> {
           //   tooltip: 'Ransack',
           //   child: const Icon(Icons.refresh),
           // ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {},
-            tooltip: 'Verify',
-            child: const Icon(Icons.check),
-          ),
+          floatingActionButton: _verified
+              ? null
+              : FloatingActionButton(
+                  onPressed: () {
+                    verifySettings();
+                  },
+                  tooltip: 'Save',
+                  child: const Icon(Icons.save),
+                ),
         ));
   }
 }

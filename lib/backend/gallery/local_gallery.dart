@@ -6,6 +6,7 @@ import 'package:pheco/backend/gallery/gallery_interface.dart';
 class LocalGallery extends GalleryInterface {
   List<String>? images;
   List<String>? folders;
+  List<String>? activeImages;
   bool updating = false;
   static const MethodChannel platform = MethodChannel('com.example.pheco/channel');
 
@@ -20,12 +21,7 @@ class LocalGallery extends GalleryInterface {
   void update() async {
     updating = true;
 
-    final List<dynamic> imagesU = await platform.invokeMethod('getImages');
-
-    List<String> tImages = [];
-    for (var i in imagesU) {
-      tImages.add(i.toString());
-    }
+    final List<String> tImages = await platform.invokeMethod('getImages');
 
     Set<String> folderPaths = {};
 
@@ -53,11 +49,5 @@ class LocalGallery extends GalleryInterface {
   @override
   List<String>? getFolderList() {
     return folders;
-  }
-
-  @override
-  String noReturnReason(String? folder) {
-    // TODO: implement noReturnReason
-    throw UnimplementedError();
   }
 }

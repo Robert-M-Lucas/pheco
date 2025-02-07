@@ -23,7 +23,6 @@ class _GalleryPageState extends State<GalleryPage> {
 
   GalleryInterface gallery() {
     switch (widget.type) {
-
       case GalleryType.local:
         return localGallery;
       case GalleryType.serverOnly:
@@ -34,7 +33,11 @@ class _GalleryPageState extends State<GalleryPage> {
   @override
   void initState() {
     // loadFiles();
-    gallery().registerUpdateCallback(() { setState(() {}); }, () { return mounted; });
+    gallery().registerUpdateCallback(() {
+      setState(() {});
+    }, () {
+      return mounted;
+    });
     gallery().initialiseIfUninitialised();
     super.initState();
   }
@@ -49,27 +52,40 @@ class _GalleryPageState extends State<GalleryPage> {
   }
 
   Widget drawer(BuildContext context) {
-    List<Widget> dFolders;
-
-    dFolders = gallery().getFolderList()?.map((f) {
-      return ListTile(
-          leading: const Icon(Icons.folder),
-          title: Text(path.basename(f)),
-          subtitle: Text(f),
-          onTap: () {
-            setState(() {
-              _selectedFolder = f;
-            });
-            Navigator.pop(context);
-          });
-    }).toList() ??
-        [
+    List<Widget> dFolders = gallery().getFolderList()?.map((f) {
+          return ListTile(
+              leading: const Icon(Icons.folder),
+              title: Text(path.basename(f)),
+              subtitle: Text(f),
+              onTap: () {
+                setState(() {
+                  _selectedFolder = f;
+                });
+                Navigator.pop(context);
+              }) as Widget;
+        }).toList() ??
+        <Widget>[
           const ListTile(
             leading: Icon(Icons.folder),
             title: Text('Loading folders...'),
             enabled: false,
           )
         ];
+
+    if (dFolders.length > 1) {
+      dFolders.insert(
+          0,
+          ListTile(
+              leading: const Icon(Icons.folder),
+              title: const Text("All Folders"),
+              subtitle: const Text("All images"),
+              onTap: () {
+                setState(() {
+                  _selectedFolder = null;
+                });
+                Navigator.pop(context);
+              }) as Widget);
+    }
 
     return Drawer(
       child: Column(
@@ -111,47 +127,53 @@ class _GalleryPageState extends State<GalleryPage> {
               ? <Widget>[
                   Text(
                     widget.type == GalleryType.local
-                        ? 'Device images will go here'
-                        : 'Server-only images will go here',
+                        ? 'Loading device images'
+                        : 'Loading server-only images',
                   ),
                   Text(
                     'Sit tight',
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                 ]
-              : <Widget>[
-                  Expanded(
-                      child: CustomScrollView(
-                    primary: false,
-                    slivers: <Widget>[
-                      SliverPadding(
-                        padding: const EdgeInsets.all(20),
-                        sliver: SliverGrid.count(
-                            crossAxisSpacing: 5,
-                            mainAxisSpacing: 5,
-                            crossAxisCount: 2,
-                            children: imageUris.where((e) {
-                              return _selectedFolder == null
-                                  ? true
-                                  : (File(e).parent.path == _selectedFolder);
-                            }).map((e) {
-                              final split = e.split(".");
-                              final pheco = split.length > 2 &&
-                                  split[split.length - 2] == "pheco";
-                              return Container(
-                                padding: const EdgeInsets.all(4),
-                                color:
-                                    pheco ? Colors.green[300] : Colors.red[300],
-                                child: Image.file(
-                                  File(e),
-                                  fit: BoxFit.cover,
-                                ),
-                              );
-                            }).toList()),
-                      ),
-                    ],
-                  ))
-                ]),
+              : (imageUris.isEmpty)
+                  ? <Widget>[
+                      const Text("No images in this folder"),
+                    ]
+                  : <Widget>[
+                      Expanded(
+                          child: CustomScrollView(
+                        primary: false,
+                        slivers: <Widget>[
+                          SliverPadding(
+                            padding: const EdgeInsets.all(20),
+                            sliver: SliverGrid.count(
+                                crossAxisSpacing: 5,
+                                mainAxisSpacing: 5,
+                                crossAxisCount: 2,
+                                children: imageUris.where((e) {
+                                  return _selectedFolder == null
+                                      ? true
+                                      : (File(e).parent.path ==
+                                          _selectedFolder);
+                                }).map((e) {
+                                  final split = e.split(".");
+                                  final pheco = split.length > 2 &&
+                                      split[split.length - 2] == "pheco";
+                                  return Container(
+                                    padding: const EdgeInsets.all(4),
+                                    color: pheco
+                                        ? Colors.green[300]
+                                        : Colors.red[300],
+                                    child: Image.file(
+                                      File(e),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  );
+                                }).toList()),
+                          ),
+                        ],
+                      ))
+                    ]),
     );
   }
 

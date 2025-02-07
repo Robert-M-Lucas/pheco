@@ -3,8 +3,6 @@ import 'package:tuple/tuple.dart';
 abstract class GalleryInterface {
   final List<Tuple2<Function(), bool Function()>> _dependencies = [];
 
-  String noReturnReason(String? folder);
-
   void initialiseIfUninitialised();
 
   void registerUpdateCallback(Function() callback, bool Function() aliveChecker) {

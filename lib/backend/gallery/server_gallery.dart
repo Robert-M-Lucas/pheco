@@ -35,11 +35,5 @@ class ServerGallery extends GalleryInterface {
   List<String>? getFolderList() {
     return folders;
   }
-
-  @override
-  String noReturnReason(String? folder) {
-    // TODO: implement noReturnReason
-    throw UnimplementedError();
-  }
 }
 
