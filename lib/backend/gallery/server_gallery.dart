@@ -17,6 +17,7 @@ class ServerGallery extends GalleryInterface {
   @override
   void update() {
     // TODO: implement update
+    throw UnimplementedError();
   }
 
   @override
@@ -33,6 +34,12 @@ class ServerGallery extends GalleryInterface {
   @override
   List<String>? getFolderList() {
     return folders;
+  }
+
+  @override
+  String noReturnReason(String? folder) {
+    // TODO: implement noReturnReason
+    throw UnimplementedError();
   }
 }
 
