@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pheco/backend/actions/action_interface.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
 import 'package:pheco/ui/shared/main_bottom_bar.dart';
 
@@ -186,7 +187,7 @@ class _RunPageState extends State<RunPage> {
                   fontWeight: FontWeight.bold,
                   color: Color.fromARGB(255, 100, 100, 100)),
             )),
-          ),
+          ) as Widget,
           const Padding(
               padding: EdgeInsets.only(bottom: 8.0),
               child: Center(
@@ -197,118 +198,135 @@ class _RunPageState extends State<RunPage> {
                       color: Colors.red,
                     )),
               )),
-          ListTile(
-            leading: const Icon(Icons.compress),
-            title: const Text('Compress Files'),
+  ] + allActions.map((e) {
+      return ListTile(
+            leading: e.getIcon(),
+            title: Text(e.getName()),
             enabled: !_runningTask,
-            subtitle: const Text(
-                'Compress uncompressed files and transfer originals to server - this is the action that can be scheduled in the settings.'),
+            subtitle: Text(e.getSubtitle()),
             onTap: () async {
-              consoleText("> [Not Implemented ] Compress Files");
+    setState(() {
+          _runningTask = true;
+        });
+        await e.run(consoleText);
+        setState(() {
+          _runningTask = false;
+        });
             },
-          ),
-          ListTile(
-            leading: const Icon(Icons.refresh),
-            title: const Text('Recompress Files'),
-            enabled: !_runningTask,
-            subtitle: const Text(
-                'Replace all existing compressed files with recompressed ones. Recommended after changing compression settings.'),
-            onTap: () async {
-              setState(() {
-                _runningTask = true;
-              });
-              consoleText("> Recompressing Files");
-              await recompressFiles();
-              consoleText("Done!");
-              setState(() {
-                _runningTask = false;
-              });
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.delete_forever),
-            title: const Text('Delete Compressed'),
-            enabled: !_runningTask,
-            subtitle: const Text(
-                'Delete all compressed files. Sets \'Upload\' to \'Manual\' to prevent automatic recompression.'),
-            onTap: () async {
-              setState(() {
-                _runningTask = true;
-              });
-              consoleText("> Deleting Compressed Files");
-              await deleteCompressedFiles();
-              consoleText("Done!");
-              setState(() {
-                _runningTask = false;
-              });
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.install_mobile),
-            title: const Text('Redownload Originals'),
-            enabled: !_runningTask,
-            subtitle: const Text(
-                'Download all original files (replacing compressed ones). Sets \'Upload\' to \'Manual\' to prevent automatic recompression.'),
-            onTap: () {
-              consoleText("> [Not Implemented] Redownload Originals");
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.difference),
-            title: const Text('Validate Files'),
-            enabled: !_runningTask,
-            subtitle: const Text(
-                'Ensures all files on server have a compressed version on device. Notifies you of any compressed files that are not on the server.'),
-            onTap: () {
-              consoleText("> [Not Implemented] Validate Files");
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.image_search),
-            title: const Text('Rescan MediaStore'),
-            enabled: !_runningTask,
-            subtitle: const Text(
-                'Rescans the device for new images Android may not have found yet.'),
-            onTap: () async {
-              setState(() {
-                _runningTask = true;
-              });
-              consoleText("> Rescanning MediaStore (can take up to a minute)");
-              consoleText("Note: This task has no progress indication");
-              Stopwatch s1 = Stopwatch()..start();
-              await platform.invokeMethod('rescanMedia');
-              s1.stop();
-              consoleText("Done - ${s1.elapsedMilliseconds}ms");
-              setState(() {
-                _runningTask = false;
-              });
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.print),
-            title: const Text('Print Test'),
-            subtitle: const Text('Print Test'),
-            enabled: !_runningTask,
-            onTap: () async {
-              setState(() {
-                _runningTask = true;
-              });
-              consoleText("> Starting print test...");
-              await Future.delayed(const Duration(seconds: 1));
-              for (var i = 0; i < 100; i++) {
-                consoleText(
-                    "[PrintTest]: ${Random().nextInt(4294967296)}${Random().nextInt(4294967296)}${Random().nextInt(4294967296)}");
-                await Future.delayed(
-                    Duration(milliseconds: Random().nextInt(100)));
-              }
-              await Future.delayed(const Duration(seconds: 2));
-              consoleText("Done!");
-              setState(() {
-                _runningTask = false;
-              });
-            },
-          ),
-        ])),
+          ) as Widget;
+            }).toList()
+          // ListTile(
+          //   leading: const Icon(Icons.compress),
+          //   title: const Text('Compress Files'),
+          //   enabled: !_runningTask,
+          //   subtitle: const Text(
+          //       'Compress uncompressed files and transfer originals to server - this is the action that can be scheduled in the settings.'),
+          //   onTap: () async {
+          //     consoleText("> [Not Implemented ] Compress Files");
+          //   },
+          // ),
+          // ListTile(
+          //   leading: const Icon(Icons.refresh),
+          //   title: const Text('Recompress Files'),
+          //   enabled: !_runningTask,
+          //   subtitle: const Text(
+          //       'Replace all existing compressed files with recompressed ones. Recommended after changing compression settings.'),
+          //   onTap: () async {
+          //     setState(() {
+          //       _runningTask = true;
+          //     });
+          //     consoleText("> Recompressing Files");
+          //     await recompressFiles();
+          //     consoleText("Done!");
+          //     setState(() {
+          //       _runningTask = false;
+          //     });
+          //   },
+          // ),
+          // ListTile(
+          //   leading: const Icon(Icons.delete_forever),
+          //   title: const Text('Delete Compressed'),
+          //   enabled: !_runningTask,
+          //   subtitle: const Text(
+          //       'Delete all compressed files. Sets \'Upload\' to \'Manual\' to prevent automatic recompression.'),
+          //   onTap: () async {
+          //     setState(() {
+          //       _runningTask = true;
+          //     });
+          //     consoleText("> Deleting Compressed Files");
+          //     await deleteCompressedFiles();
+          //     consoleText("Done!");
+          //     setState(() {
+          //       _runningTask = false;
+          //     });
+          //   },
+          // ),
+          // ListTile(
+          //   leading: const Icon(Icons.install_mobile),
+          //   title: const Text('Redownload Originals'),
+          //   enabled: !_runningTask,
+          //   subtitle: const Text(
+          //       'Download all original files (replacing compressed ones). Sets \'Upload\' to \'Manual\' to prevent automatic recompression.'),
+          //   onTap: () {
+          //     consoleText("> [Not Implemented] Redownload Originals");
+          //   },
+          // ),
+          // ListTile(
+          //   leading: const Icon(Icons.difference),
+          //   title: const Text('Validate Files'),
+          //   enabled: !_runningTask,
+          //   subtitle: const Text(
+          //       'Ensures all files on server have a compressed version on device. Notifies you of any compressed files that are not on the server.'),
+          //   onTap: () {
+          //     consoleText("> [Not Implemented] Validate Files");
+          //   },
+          // ),
+          // ListTile(
+          //   leading: const Icon(Icons.image_search),
+          //   title: const Text('Rescan MediaStore'),
+          //   enabled: !_runningTask,
+          //   subtitle: const Text(
+          //       'Rescans the device for new images Android may not have found yet.'),
+          //   onTap: () async {
+          //     setState(() {
+          //       _runningTask = true;
+          //     });
+          //     consoleText("> Rescanning MediaStore (can take up to a minute)");
+          //     consoleText("Note: This task has no progress indication");
+          //     Stopwatch s1 = Stopwatch()..start();
+          //     await platform.invokeMethod('rescanMedia');
+          //     s1.stop();
+          //     consoleText("Done - ${s1.elapsedMilliseconds}ms");
+          //     setState(() {
+          //       _runningTask = false;
+          //     });
+          //   },
+          // ),
+          // ListTile(
+          //   leading: const Icon(Icons.print),
+          //   title: const Text('Print Test'),
+          //   subtitle: const Text('Print Test'),
+          //   enabled: !_runningTask,
+          //   onTap: () async {
+          //     setState(() {
+          //       _runningTask = true;
+          //     });
+          //     consoleText("> Starting print test...");
+          //     await Future.delayed(const Duration(seconds: 1));
+          //     for (var i = 0; i < 100; i++) {
+          //       consoleText(
+          //           "[PrintTest]: ${Random().nextInt(4294967296)}${Random().nextInt(4294967296)}${Random().nextInt(4294967296)}");
+          //       await Future.delayed(
+          //           Duration(milliseconds: Random().nextInt(100)));
+          //     }
+          //     await Future.delayed(const Duration(seconds: 2));
+          //     consoleText("Done!");
+          //     setState(() {
+          //       _runningTask = false;
+          //     });
+          //   },
+          // ),]
+    )),
         Container(
           width: double.infinity,
           color: Colors.black,
