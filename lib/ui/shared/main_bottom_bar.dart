@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:pheco/ui/pages/server_gallery_page.dart';
 
-import '../pages/gallery_page.dart';
+import '../pages/local_gallery_page.dart';
 import '../pages/run_page.dart';
+import 'gallery_content.dart';
 
 class MainBottomBar extends StatefulWidget {
   const MainBottomBar({super.key, required this.type, required this.enabled});
@@ -17,7 +19,7 @@ class _MainBottomBarState extends State<MainBottomBar> {
   void navigateToOther(GalleryType other) {
     Navigator.of(context).pushReplacement(PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) =>
-          GalleryPage(type: other),
+          other ==  GalleryType.local ? const LocalGalleryPage() : const ServerGalleryPage(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         final tween = Tween(begin: 0.0, end: 1.0);
         final opacityAnimation = animation.drive(tween);

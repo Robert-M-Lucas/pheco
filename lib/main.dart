@@ -4,7 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:pheco/backend/gallery/local_gallery.dart';
 import 'package:pheco/backend/gallery/server_gallery.dart';
 import 'package:pheco/backend/settings_store.dart';
-import 'package:pheco/ui/pages/gallery_page.dart';
+import 'package:pheco/ui/pages/local_gallery_page.dart';
 import 'package:pheco/ui/pages/welcome_page.dart';
 
 late LocalGallery localGallery;
@@ -40,7 +40,7 @@ void main() async {
   runApp(MyApp(showWelcomePage: showWelcomePage));
 }
 
-const Widget mainPage = GalleryPage(type: GalleryType.local);
+const Widget mainPage = LocalGalleryPage();
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key, required this.showWelcomePage});
