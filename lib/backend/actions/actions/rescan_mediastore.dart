@@ -6,19 +6,14 @@ class RescanMediaStoreAction implements ActionInterface {
   const RescanMediaStoreAction();
 
   @override
-  Icon getIcon() {
-    return const Icon(Icons.image_search);
-  }
+  Icon getIcon() => const Icon(Icons.image_search);
 
   @override
-  String getName() {
-    return "Rescan MediaStore";
-  }
+  String getName() => "Rescan MediaStore";
 
   @override
-  String getSubtitle() {
-    return "Rescans the device for new images Android may not have found yet.";
-  }
+  String getSubtitle() =>
+      "Rescans the device for new images Android may not have found yet.";
 
   @override
   Future<void> run(Function(String) printer) async {
@@ -26,4 +21,10 @@ class RescanMediaStoreAction implements ActionInterface {
     printer("this can take around a minute");
     await platformChannel.invokeMethod('rescanMedia');
   }
+
+  @override
+  bool requireServerConnection() => false;
+
+  @override
+  bool requireValidSettings() => false;
 }

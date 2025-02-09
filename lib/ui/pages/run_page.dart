@@ -138,21 +138,6 @@ class _RunPageState extends State<RunPage> {
   //   }
   // }
 
-  Future<void> saveFile(Uint8List uint8List, String filePath) async {
-    // Request storage permission (needed for Android 10 and below)
-    if (await Permission.storage.request().isDenied) {
-      print("Storage permission denied");
-      return;
-    }
-
-    // Write the file
-    File file = File(filePath);
-    final result = await file.writeAsBytes(uint8List);
-    print(result);
-
-    print("File saved to: $filePath");
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -189,6 +174,24 @@ class _RunPageState extends State<RunPage> {
                         )),
                       ) as Widget,
                     ] +
+                    (settingsStore.validData()
+                        ? []
+                        : [
+                            Padding(
+                                padding: EdgeInsets.only(
+                                    bottom:
+                                        serverGallery.connectionError() == null
+                                            ? 8.0
+                                            : 0.00),
+                                child: const Center(
+                                  child: Text("Settings aren't configured",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.red,
+                                      )),
+                                )),
+                          ]) +
                     (serverGallery.connectionError() == null
                         ? []
                         : [
@@ -229,7 +232,7 @@ class _RunPageState extends State<RunPage> {
                     }).toList()
                 // ListTile(
                 //   leading: const Icon(Icons.compress),
-                //   title: const Text('Compress Files'),
+                //   title: const Text('Compress & Upload Files'),
                 //   enabled: !_runningTask,
                 //   subtitle: const Text(
                 //       'Compress uncompressed files and transfer originals to server - this is the action that can be scheduled in the settings.'),
