@@ -4,8 +4,6 @@ import 'package:pheco/backend/nas_interfaces/nas_client.dart';
 import 'package:pheco/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const List<String> protocolOptions = ['SFTP', 'SMB'];
-
 const List<String> frequencyOptions = [
   'Manual',
   'Hourly',
@@ -113,9 +111,7 @@ class SettingsStore {
       return "Invalid frequency";
     }
 
-    final nasResponse = await getNasInterfaceConfig(
-            localIp, publicIp, serverFolder, username, password)
-        .testConnection();
+    final nasResponse = await getNasInterface(protocol, localIp, publicIp, serverFolder, username, password).testConnection();
     if (nasResponse == null) {
       return nasResponse;
     }
@@ -183,14 +179,5 @@ class SettingsStore {
     }
   }
 
-  NasClient getNasInterface() {
-    // TODO: implement getNasInterface
-    throw UnimplementedError();
-  }
-}
 
-NasClient getNasInterfaceConfig(String localIp, String publicIp,
-    String serverFolder, String username, String password) {
-  // TODO
-  throw UnimplementedError();
 }

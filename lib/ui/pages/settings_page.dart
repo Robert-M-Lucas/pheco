@@ -5,6 +5,8 @@ import 'package:pheco/main.dart';
 import 'package:pheco/ui/pages/about_page.dart';
 import 'package:path/path.dart' as path;
 
+import '../../backend/nas_interfaces/nas_client.dart';
+
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
@@ -39,8 +41,11 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void loadSettings() {
+    _verified = settingsStore.validData();
+
+    if (!settingsStore.validData()) { return; }
+
     setState(() {
-      _verified = settingsStore.validData();
       _otherNetworks = settingsStore.otherNetworks();
       _mobileData = settingsStore.mobileData();
       _protocol = settingsStore.protocol();
@@ -56,7 +61,7 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
-  Future<void> pickFolder() async {
+  Future<void> pickFolder(BuildContext context) async {
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
 
     if (selectedDirectory != null) {
@@ -84,10 +89,34 @@ class _SettingsPageState extends State<SettingsPage> {
         _folderMode,
         _folders);
 
-    if (result != null) {
+    if (result == null) {
       setState(() {
         _verified = true;
       });
+    }
+    else {
+      showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Setting verification failed'),
+            content: Text(
+              result,
+            ),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: const Text('Ok'),
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+              ),
+            ],
+          );
+        },
+      );
     }
 
     return result;
@@ -284,7 +313,7 @@ class _SettingsPageState extends State<SettingsPage> {
           trailing: IconButton(
               icon: const Icon(Icons.add),
               onPressed: () {
-                pickFolder();
+                pickFolder(context);
               }),
         ),
         Column(
