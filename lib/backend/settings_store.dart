@@ -29,7 +29,6 @@ const String folderModeKey = "folderMode";
 const String foldersKey = "folders";
 const String welcomeVersionKey = "welcomeVersion";
 
-
 class SettingsStore {
   final List<Function()> listeners = [];
 
@@ -66,7 +65,6 @@ class SettingsStore {
   List<String> folders() => List<String>.from(_folders);
 
   int? _welcomeVersion;
-
 
   Future<void> initialise() async {
     _sp = await SharedPreferences.getInstance();
@@ -115,17 +113,19 @@ class SettingsStore {
       return "Invalid frequency";
     }
 
-    final nasResponse = await getNasInterfaceConfig(localIp, publicIp, serverFolder, username, password).testConnection();
+    final nasResponse = await getNasInterfaceConfig(
+            localIp, publicIp, serverFolder, username, password)
+        .testConnection();
     if (nasResponse == null) {
       return nasResponse;
     }
-    
+
     if (compressionQuality < 5 || compressionQuality > 95) {
       return "Invalid compression quality";
     }
 
     for (final f in folders) {
-      if ( await Directory(f).exists()) {
+      if (await Directory(f).exists()) {
         return "Folder '${Directory(f).path}' doesn't exist";
       }
     }
@@ -145,7 +145,6 @@ class SettingsStore {
       _sp.setStringList(foldersKey, folders),
       _sp.setBool(validDataKey, true),
     ]);
-
 
     _otherNetworks = otherNetworks;
     _mobileData = mobileData;
@@ -173,7 +172,7 @@ class SettingsStore {
   Future<void> setWelcomeVersion(int version) async {
     await _sp.setInt(welcomeVersionKey, version);
   }
-  
+
   void addUpdateListener(Function() permanentListener) {
     listeners.add(permanentListener);
   }
@@ -190,7 +189,8 @@ class SettingsStore {
   }
 }
 
-NasClient getNasInterfaceConfig(String localIp, String publicIp, String serverFolder, String username, String password) {
+NasClient getNasInterfaceConfig(String localIp, String publicIp,
+    String serverFolder, String username, String password) {
   // TODO
   throw UnimplementedError();
 }

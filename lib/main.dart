@@ -14,7 +14,7 @@ late LocalGallery localGallery;
 late ServerGallery serverGallery;
 late SettingsStore settingsStore;
 
-AndroidOptions _getAndroidOptions()  {
+AndroidOptions _getAndroidOptions() {
   return const AndroidOptions(encryptedSharedPreferences: true);
 }
 

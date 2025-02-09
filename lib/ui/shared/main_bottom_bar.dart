@@ -19,7 +19,9 @@ class _MainBottomBarState extends State<MainBottomBar> {
   void navigateToOther(GalleryType other) {
     Navigator.of(context).pushReplacement(PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) =>
-          other ==  GalleryType.local ? const LocalGalleryPage() : const ServerGalleryPage(),
+          other == GalleryType.local
+              ? const LocalGalleryPage()
+              : const ServerGalleryPage(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         final tween = Tween(begin: 0.0, end: 1.0);
         final opacityAnimation = animation.drive(tween);

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lorem_ipsum/lorem_ipsum.dart';
 import 'package:pheco/main.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 const int welcomeInfoVersion = 4;
 

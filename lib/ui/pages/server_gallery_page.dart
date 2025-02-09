@@ -1,7 +1,5 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:pheco/backend/gallery/gallery_interface.dart';
 import 'package:pheco/main.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
 import 'package:path/path.dart' as path;
@@ -32,6 +30,31 @@ class _ServerGalleryPageState extends State<ServerGalleryPage> {
     super.initState();
   }
 
+  Widget _noConnectionScreen(BuildContext context) {
+    return Center(
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: Colors.red[400],
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Text(
+                "No connection to server",
+                style: TextStyle(color: Colors.white),
+              ),
+              Text(
+                serverGallery.connectionError()!,
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineMedium!
+                    .copyWith(color: Colors.white),
+              ),
+            ]),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,10 +75,18 @@ class _ServerGalleryPageState extends State<ServerGalleryPage> {
             ),
           ],
         ),
-        drawer: galleryDrawer(context, localGallery.getFolderList(), (s) { setState(() {
-          _selectedFolder = s;
-        }); }),
-        body: galleryContent(context, localGallery.getFilesInFolder(_selectedFolder), _selectedFolder, GalleryType.serverOnly),
+        drawer: galleryDrawer(context, serverGallery.getFolderList(), (s) {
+          setState(() {
+            _selectedFolder = s;
+          });
+        }),
+        body: serverGallery.connectionError() == null
+            ? galleryContent(
+                context,
+                serverGallery.getFilesInFolder(_selectedFolder),
+                _selectedFolder,
+                GalleryType.serverOnly)
+            : _noConnectionScreen(context),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             localGallery.update();

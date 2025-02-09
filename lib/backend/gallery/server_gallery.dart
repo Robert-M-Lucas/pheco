@@ -20,6 +20,10 @@ class ServerGallery extends GalleryInterface {
     // throw UnimplementedError();
   }
 
+  String? connectionError() {
+    return "Set up a connection in settings";
+  }
+
   @override
   List<String>? getFilesInFolder(String? folder) {
     if (folder == null) {
@@ -36,4 +40,3 @@ class ServerGallery extends GalleryInterface {
     return folders;
   }
 }
-

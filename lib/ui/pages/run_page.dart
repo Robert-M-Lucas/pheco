@@ -1,11 +1,10 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pheco/backend/actions/action_interface.dart';
+import 'package:pheco/main.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
 import 'package:pheco/ui/shared/main_bottom_bar.dart';
 
@@ -189,18 +188,22 @@ class _RunPageState extends State<RunPage> {
                               color: Color.fromARGB(255, 100, 100, 100)),
                         )),
                       ) as Widget,
-                      const Padding(
-                          padding: EdgeInsets.only(bottom: 8.0),
-                          child: Center(
-                            child: Text(
-                                'Do close the app while actions are in progress!',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.red,
-                                )),
-                          )),
                     ] +
+                    (serverGallery.connectionError() == null
+                        ? []
+                        : [
+                            Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0),
+                                child: Center(
+                                  child: Text(
+                                      "No server connection: ${serverGallery.connectionError()!}",
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.red,
+                                      )),
+                                )),
+                          ]) +
                     allActions.map((e) {
                       return ListTile(
                         leading: e.getIcon(),
@@ -216,7 +219,8 @@ class _RunPageState extends State<RunPage> {
                           Stopwatch s = Stopwatch()..start();
                           await e.run(consoleText);
                           s.stop();
-                          consoleText("> Completed in ${s.elapsedMilliseconds}ms");
+                          consoleText(
+                              "> Completed in ${s.elapsedMilliseconds}ms");
                           setState(() {
                             _runningTask = false;
                           });

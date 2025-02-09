@@ -1,7 +1,5 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:pheco/backend/gallery/gallery_interface.dart';
 import 'package:pheco/main.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
 import 'package:path/path.dart' as path;
@@ -52,10 +50,16 @@ class _LocalGalleryPageState extends State<LocalGalleryPage> {
             ),
           ],
         ),
-        drawer: galleryDrawer(context, localGallery.getFolderList(), (s) { setState(() {
-          _selectedFolder = s;
-        }); }),
-        body: galleryContent(context, localGallery.getFilesInFolder(_selectedFolder), _selectedFolder, GalleryType.local),
+        drawer: galleryDrawer(context, localGallery.getFolderList(), (s) {
+          setState(() {
+            _selectedFolder = s;
+          });
+        }),
+        body: galleryContent(
+            context,
+            localGallery.getFilesInFolder(_selectedFolder),
+            _selectedFolder,
+            GalleryType.local),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             localGallery.update();

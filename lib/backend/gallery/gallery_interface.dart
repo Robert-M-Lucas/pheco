@@ -5,7 +5,8 @@ abstract class GalleryInterface {
 
   void initialiseIfUninitialised();
 
-  void registerUpdateCallback(Function() callback, bool Function() aliveChecker) {
+  void registerUpdateCallback(
+      Function() callback, bool Function() aliveChecker) {
     _dependencies.add(Tuple2(callback, aliveChecker));
   }
 
