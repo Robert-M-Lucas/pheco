@@ -17,11 +17,14 @@ class PrintTestAction implements ActionInterface {
 
   @override
   String getSubtitle() {
-    return "Tests printing";
+    return "Tests printing.";
   }
 
   @override
   Future<void> run(Function(String) printer) async {
     printer("Test print");
+    printer("Delaying...");
+    await Future.delayed(const Duration(milliseconds: 1000));
+    printer("Done delaying");
   }
 }

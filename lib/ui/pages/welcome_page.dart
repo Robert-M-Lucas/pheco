@@ -3,15 +3,10 @@ import 'package:lorem_ipsum/lorem_ipsum.dart';
 import 'package:pheco/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const int welcomeInfoVersion = 3;
+const int welcomeInfoVersion = 4;
 
-Future<bool> shouldShowWelcomePage() async {
-  final sp = await SharedPreferences.getInstance();
-  var v = sp.getInt("welcomeVersion");
-  if (v == null) {
-    return true;
-  }
-  return v != welcomeInfoVersion;
+bool shouldShowWelcomePage() {
+  return settingsStore.welcomeVersion() != welcomeInfoVersion;
 }
 
 class WelcomePage extends StatefulWidget {
@@ -71,8 +66,7 @@ class _WelcomePageState extends State<WelcomePage> {
               ),
               TextButton(
                 onPressed: () async {
-                  (await SharedPreferences.getInstance())
-                      .setInt("welcomeVersion", welcomeInfoVersion);
+                  await settingsStore.setWelcomeVersion(welcomeInfoVersion);
                   goToMainPage();
                 },
                 child: const Text("Don't show again"),

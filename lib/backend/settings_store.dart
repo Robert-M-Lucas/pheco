@@ -27,6 +27,7 @@ const String passwordKey = "password";
 const String compressionQualityKey = "compressionQuality";
 const String folderModeKey = "folderMode";
 const String foldersKey = "folders";
+const String welcomeVersionKey = "welcomeVersion";
 
 
 class SettingsStore {
@@ -64,6 +65,8 @@ class SettingsStore {
   List<String> _folders = [];
   List<String> folders() => List<String>.from(_folders);
 
+  int? _welcomeVersion;
+
 
   Future<void> initialise() async {
     _sp = await SharedPreferences.getInstance();
@@ -83,8 +86,11 @@ class SettingsStore {
       _compressionQuality = _sp.getInt(compressionQualityKey)!;
       _folderMode = _sp.getBool(folderModeKey)!;
       _folders = _sp.getStringList(foldersKey)!;
+
       _initialised = true;
     }
+
+    _welcomeVersion = _sp.getInt(welcomeVersionKey);
 
     _updateListeners();
   }
@@ -158,6 +164,14 @@ class SettingsStore {
 
     _updateListeners();
     return null;
+  }
+
+  int? welcomeVersion() {
+    return _welcomeVersion;
+  }
+
+  Future<void> setWelcomeVersion(int version) async {
+    await _sp.setInt(welcomeVersionKey, version);
   }
   
   void addUpdateListener(Function() permanentListener) {
