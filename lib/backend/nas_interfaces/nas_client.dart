@@ -4,8 +4,7 @@ abstract class NasClient {
 
 const List<String> protocolOptions = ['SFTP', 'SMB'];
 
-NasClient getNasInterface(String nasType, String localIp, String publicIp, String serverFolder, String username, String? password) {
-
-
+NasClient getNasInterface(String nasType, String localIp, String publicIp,
+    String serverFolder, String username, String? password) {
   throw UnimplementedError();
 }

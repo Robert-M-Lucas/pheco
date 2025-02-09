@@ -111,7 +111,9 @@ class SettingsStore {
       return "Invalid frequency";
     }
 
-    final nasResponse = await getNasInterface(protocol, localIp, publicIp, serverFolder, username, password).testConnection();
+    final nasResponse = await getNasInterface(
+            protocol, localIp, publicIp, serverFolder, username, password)
+        .testConnection();
     if (nasResponse == null) {
       return nasResponse;
     }
@@ -178,6 +180,4 @@ class SettingsStore {
       l();
     }
   }
-
-
 }

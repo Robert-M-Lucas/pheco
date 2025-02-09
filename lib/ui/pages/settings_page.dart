@@ -43,7 +43,9 @@ class _SettingsPageState extends State<SettingsPage> {
   void loadSettings() {
     _verified = settingsStore.validData();
 
-    if (!settingsStore.validData()) { return; }
+    if (!settingsStore.validData()) {
+      return;
+    }
 
     setState(() {
       _otherNetworks = settingsStore.otherNetworks();
@@ -93,8 +95,7 @@ class _SettingsPageState extends State<SettingsPage> {
       setState(() {
         _verified = true;
       });
-    }
-    else {
+    } else {
       showDialog<bool>(
         context: context,
         builder: (BuildContext context) {

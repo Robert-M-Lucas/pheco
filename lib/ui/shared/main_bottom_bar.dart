@@ -41,6 +41,7 @@ class _MainBottomBarState extends State<MainBottomBar> {
           Expanded(
             child: SizedBox.expand(
               child: IconButton(
+                isSelected: widget.type == GalleryType.local,
                 icon: const Icon(Icons.home, size: 30),
                 onPressed: widget.enabled
                     ? () {
@@ -55,6 +56,7 @@ class _MainBottomBarState extends State<MainBottomBar> {
           Expanded(
             child: SizedBox.expand(
               child: IconButton(
+                isSelected: widget.type == GalleryType.serverOnly,
                 icon: const Icon(Icons.storage, size: 30),
                 onPressed: widget.enabled
                     ? () {
@@ -69,6 +71,7 @@ class _MainBottomBarState extends State<MainBottomBar> {
           Expanded(
             child: SizedBox.expand(
               child: IconButton(
+                isSelected: widget.type == null,
                 icon: const Icon(Icons.play_arrow, size: 30),
                 onPressed: widget.enabled
                     ? () {
