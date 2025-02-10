@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:pheco/backend/nas_interfaces/nas_client.dart';
+import 'package:pheco/backend/utils.dart';
 import 'package:pheco/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -104,29 +105,27 @@ class SettingsStore {
       int compressionQuality,
       bool folderMode,
       List<String> folders) async {
-    if (protocolOptions.contains(protocol)) {
-      return "Invalid protocol";
+    if (!protocolOptions.contains(protocol)) {
+      throw SettingsChangeException("Invalid protocol");
     }
-    if (frequencyOptions.contains(frequency)) {
-      return "Invalid frequency";
+    if (!frequencyOptions.contains(frequency)) {
+      throw SettingsChangeException("Invalid frequency");
+    }
+
+    if (compressionQuality < 5 || compressionQuality > 95) {
+      throw SettingsChangeException("Invalid compression quality");
+    }
+
+    for (final f in folders) {
+      if (await Directory(f).exists()) {
+        throw SettingsChangeException(
+            "Folder '${Directory(f).path}' doesn't exist");
+      }
     }
 
     final nasResponse = await getNasInterface(
             protocol, localIp, publicIp, serverFolder, username, password)
         .testConnection();
-    if (nasResponse == null) {
-      return nasResponse;
-    }
-
-    if (compressionQuality < 5 || compressionQuality > 95) {
-      return "Invalid compression quality";
-    }
-
-    for (final f in folders) {
-      if (await Directory(f).exists()) {
-        return "Folder '${Directory(f).path}' doesn't exist";
-      }
-    }
 
     await Future.wait([
       _sp.setBool(otherNetworksKey, otherNetworks),
@@ -160,7 +159,7 @@ class SettingsStore {
     _validData = true;
 
     _updateListeners();
-    return null;
+    return nasResponse;
   }
 
   int? welcomeVersion() {

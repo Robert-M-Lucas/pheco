@@ -4,6 +4,7 @@ import 'package:pheco/backend/settings_store.dart';
 import 'package:pheco/main.dart';
 import 'package:pheco/ui/pages/about_page.dart';
 import 'package:path/path.dart' as path;
+import 'package:pheco/backend/utils.dart';
 
 import '../../backend/nas_interfaces/nas_client.dart';
 
@@ -76,33 +77,67 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  Future<String?> verifySettings() async {
-    final result = await settingsStore.setValues(
-        _otherNetworks,
-        _mobileData,
-        _protocol,
-        _selectedFrequency,
-        _localIpFieldController.text,
-        _publicIpFieldController.text,
-        _serverFolderController.text,
-        _usernameFieldController.text,
-        _passwordFieldController.text,
-        _compressionQuality as int,
-        _folderMode,
-        _folders);
-
-    if (result == null) {
-      setState(() {
-        _verified = true;
-      });
-    } else {
+  Future<void> verifySettings() async {
+    final String? result;
+    try {
+      result = await settingsStore.setValues(
+          _otherNetworks,
+          _mobileData,
+          _protocol,
+          _selectedFrequency,
+          _localIpFieldController.text,
+          _publicIpFieldController.text,
+          _serverFolderController.text,
+          _usernameFieldController.text,
+          _passwordFieldController.text,
+          _compressionQuality.toInt(),
+          _folderMode,
+          _folders);
+    } on SettingsChangeException catch (p) {
+      if (!mounted) {
+        return;
+      }
       showDialog<bool>(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text('Setting verification failed'),
             content: Text(
-              result,
+              p.cause,
+            ),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: const Text('Ok'),
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
+    setState(() {
+      _verified = true;
+    });
+
+    if (!mounted) {
+      return;
+    }
+
+    if (result != null) {
+      showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Settings Saved. Server status:'),
+            content: Text(
+              result!,
             ),
             actions: <Widget>[
               TextButton(
@@ -119,8 +154,6 @@ class _SettingsPageState extends State<SettingsPage> {
         },
       );
     }
-
-    return result;
   }
 
   Widget settingsOptions(BuildContext context) {

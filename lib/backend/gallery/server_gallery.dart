@@ -14,6 +14,10 @@ class ServerGallery extends GalleryInterface {
     }
   }
 
+  bool isInitialised() {
+    return false;
+  }
+
   @override
   void update() {
     // TODO: implement update

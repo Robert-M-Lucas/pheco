@@ -54,7 +54,7 @@ class CompressAndUploadAction implements ActionInterface {
 
     var compressedFiles = [];
     var compressed = 0;
-    final int interval = (nonPheco.length / 10).toInt();
+    final int interval = nonPheco.length ~/ 10;
     printer("Interval: $interval");
     var step = 1;
 

@@ -1,8 +1,4 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:pheco/backend/actions/action_interface.dart';
 import 'package:pheco/main.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
@@ -52,6 +48,21 @@ class _RunPageState extends State<RunPage> {
     //   }
     //   print(call);
     // });
+
+    localGallery.registerUpdateCallback(() {
+      setState(() {});
+    }, () {
+      return mounted;
+    });
+    localGallery.initialiseIfUninitialised();
+
+    serverGallery.registerUpdateCallback(() {
+      setState(() {});
+    }, () {
+      return mounted;
+    });
+    serverGallery.initialiseIfUninitialised();
+
     super.initState();
   }
 
@@ -211,7 +222,11 @@ class _RunPageState extends State<RunPage> {
                       return ListTile(
                         leading: e.getIcon(),
                         title: Text(e.getName()),
-                        enabled: !_runningTask,
+                        enabled: !(_runningTask ||
+                            (e.requireValidSettings() &&
+                                !settingsStore.validData()) ||
+                            (e.requireServerConnection() &&
+                                !serverGallery.isInitialised())),
                         subtitle: Text(e.getSubtitle()),
                         onTap: () async {
                           setState(() {
