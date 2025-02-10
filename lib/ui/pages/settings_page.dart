@@ -17,6 +17,7 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool _verified = false;
+  bool _saving = false;
   bool _otherNetworks = true;
   bool _mobileData = false;
   String _protocol = protocolOptions[0];
@@ -58,13 +59,13 @@ class _SettingsPageState extends State<SettingsPage> {
       _serverFolderController.text = settingsStore.serverFolder();
       _usernameFieldController.text = settingsStore.username();
       _passwordFieldController.text = settingsStore.password();
-      _compressionQuality = settingsStore.compressionQuality() as double;
+      _compressionQuality = settingsStore.compressionQuality().toDouble();
       _folders = settingsStore.folders();
       _folderMode = settingsStore.folderMode();
     });
   }
 
-  Future<void> pickFolder(BuildContext context) async {
+  Future<void> _pickFolder(BuildContext context) async {
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
 
     if (selectedDirectory != null) {
@@ -77,7 +78,7 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  Future<void> verifySettings() async {
+  Future<void> _verifySettings() async {
     final String? result;
     try {
       result = await settingsStore.setValues(
@@ -101,7 +102,7 @@ class _SettingsPageState extends State<SettingsPage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: const Text('Setting verification failed'),
+            title: const Text('Settings verification failed'),
             content: Text(
               p.cause,
             ),
@@ -135,7 +136,7 @@ class _SettingsPageState extends State<SettingsPage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: const Text('Settings Saved. Server status:'),
+            title: const Text('Settings Saved'),
             content: Text(
               result!,
             ),
@@ -155,8 +156,18 @@ class _SettingsPageState extends State<SettingsPage> {
       );
     }
   }
+  
+  Future<void> _verifySettingsWrapper() async {
+    setState(() {
+      _saving = true;
+    });
+    await _verifySettings();
+    setState(() {
+      _saving = false;
+    });
+  }
 
-  Widget settingsOptions(BuildContext context) {
+  Widget _settingsOptions(BuildContext context) {
     return ListView(
       children: [
         const Padding(
@@ -347,7 +358,7 @@ class _SettingsPageState extends State<SettingsPage> {
           trailing: IconButton(
               icon: const Icon(Icons.add),
               onPressed: () {
-                pickFolder(context);
+                _pickFolder(context);
               }),
         ),
         Column(
@@ -480,7 +491,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 const Text("Settings", style: TextStyle(color: Colors.white)),
             iconTheme: const IconThemeData(color: Colors.white),
           ),
-          body: settingsOptions(context),
+          body: _settingsOptions(context),
           // floatingActionButton: FloatingActionButton(
           //   onPressed: () async {
           //     print("Refresh Button");
@@ -495,10 +506,11 @@ class _SettingsPageState extends State<SettingsPage> {
               ? null
               : FloatingActionButton(
                   onPressed: () {
-                    verifySettings();
+                    _verifySettingsWrapper();
                   },
                   tooltip: 'Save',
                   child: const Icon(Icons.save),
+
                 ),
         ));
   }
