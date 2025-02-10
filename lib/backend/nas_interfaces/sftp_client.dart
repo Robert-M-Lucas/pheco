@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:dartssh2/dartssh2.dart';
 import 'package:pheco/backend/nas_interfaces/nas_client.dart';
@@ -17,7 +16,8 @@ class PSftpClient implements NasClient {
 
   Future<SSHClient> getClient(ValidIp ip) async {
     return SSHClient(
-      await SSHSocket.connect(ip.ip, ip.port, timeout: const Duration(milliseconds: 2500)),
+      await SSHSocket.connect(ip.ip, ip.port,
+          timeout: const Duration(milliseconds: 2500)),
       username: username,
       onPasswordRequest: () => password,
     );
@@ -25,27 +25,30 @@ class PSftpClient implements NasClient {
 
   @override
   Future<String?> testConnection() async {
-    print("Testing local connection");
+    print("Testing local connection - $localIp");
 
     SSHClient? localClient;
     try {
       localClient = await getClient(localIp);
-    }
-    on SocketException {
+    } catch (e) {
+      print(e);
       localClient = null;
     }
 
-    print("Testing public connection");
+    print("Testing public connection - $publicIp");
     SSHClient? publicClient;
     try {
       publicClient = publicIp != null ? await getClient(publicIp!) : null;
-    }
-    on SocketException {
+    } catch (e) {
+      print(e);
       publicClient = null;
     }
 
+    print("Local: ${localClient != null} | Public: ${publicClient != null}");
+
     if (localClient == null && publicIp == null) {
-      throw SettingsChangeException("Failed to connect to server through public or private IP");
+      throw SettingsChangeException(
+          "Failed to connect to server through public or private IP");
     }
 
     print("Testing authentication / SFTP");
@@ -54,10 +57,13 @@ class PSftpClient implements NasClient {
     try {
       testClient = await (localClient ?? publicClient!).sftp();
       print(await testClient.listdir("/"));
+    } catch (e) {
+      print(e);
+      throw SettingsChangeException(
+          "Failed to authenticate with SFTP server. Check username and password.");
     }
-    on SSHAuthFailError {
-      throw SettingsChangeException("Failed to authenticate with SFTP server. Check username and password.");
-    }
+
+    print("Done");
 
     if (localClient == null) {
       return "Failed to connect through local IP but succeeded through public IP. Settings saved.";

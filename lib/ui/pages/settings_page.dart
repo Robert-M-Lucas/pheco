@@ -156,7 +156,7 @@ class _SettingsPageState extends State<SettingsPage> {
       );
     }
   }
-  
+
   Future<void> _verifySettingsWrapper() async {
     setState(() {
       _saving = true;
@@ -460,7 +460,7 @@ class _SettingsPageState extends State<SettingsPage> {
               style: TextButton.styleFrom(
                 textStyle: Theme.of(context).textTheme.labelLarge,
               ),
-              child: const Text('Verify & Save'),
+              child: const Text('Go Back'),
               onPressed: () {
                 Navigator.pop(context, false);
               },
@@ -479,7 +479,8 @@ class _SettingsPageState extends State<SettingsPage> {
           if (didPop) {
             return;
           }
-          final bool shouldPop = await _showBackDialog() ?? false;
+          final bool shouldPop =
+              _verified ? true : (await _showBackDialog() ?? false);
           if (context.mounted && shouldPop) {
             Navigator.pop(context);
           }
@@ -505,12 +506,13 @@ class _SettingsPageState extends State<SettingsPage> {
           floatingActionButton: _verified
               ? null
               : FloatingActionButton(
-                  onPressed: () {
-                    _verifySettingsWrapper();
-                  },
+                  onPressed: _saving
+                      ? null
+                      : () {
+                          _verifySettingsWrapper();
+                        },
                   tooltip: 'Save',
                   child: const Icon(Icons.save),
-
                 ),
         ));
   }

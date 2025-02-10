@@ -8,4 +8,9 @@ class ValidIp {
 
   final String ip;
   final int port;
+
+  @override
+  String toString() {
+    return "$ip:$port";
+  }
 }

@@ -6,19 +6,21 @@ abstract class NasClient {
   Future<String?> testConnection();
 }
 
-const List<String> protocolOptions = ['SFTP', 'SMB'];
+const List<String> protocolOptions = ['SFTP'];
 
 ValidIp ipStringToPort(String ipString) {
   final split = ipString.split(':');
   if (split.length != 2) {
-    throw SettingsChangeException("[0] IPs must be formatted 123.456.789.123:4567");
+    throw SettingsChangeException(
+        "[0] IPs must be formatted 123.456.789.123:4567");
   }
   final justIp = split[0];
   final justPort = split[1];
 
   final port = int.tryParse(justPort);
   if (port == null) {
-    throw SettingsChangeException("[1] IPs must be formatted 123.456.789.123:4567");
+    throw SettingsChangeException(
+        "[1] IPs must be formatted 123.456.789.123:4567");
   }
 
   if (port < 0 || port > 65535) {
@@ -27,7 +29,8 @@ ValidIp ipStringToPort(String ipString) {
 
   final ipSplit = justIp.split(".");
   if (ipSplit.length != 4) {
-    throw SettingsChangeException("[2] IPs must be formatted 123.456.789.123:4567");
+    throw SettingsChangeException(
+        "[2] IPs must be formatted 123.456.789.123:4567");
   }
 
   ipSplit.map((e) {
@@ -48,7 +51,6 @@ ValidIp ipStringToPort(String ipString) {
 
 NasClient getNasInterface(String nasType, String localIp, String publicIp,
     String serverFolder, String username, String password) {
-
   if (localIp.isEmpty) {
     throw SettingsChangeException("Local IP must be set");
   }
