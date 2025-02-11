@@ -34,6 +34,14 @@ class _SettingsPageState extends State<SettingsPage> {
   List<String> _folders = [];
   bool _folderMode = false; // False is exclude
 
+  final WidgetStateProperty<Icon?> _thumbIcon =
+  WidgetStateProperty.resolveWith<Icon?>((states) {
+    if (states.contains(WidgetState.selected)) {
+      return const Icon(Icons.check);
+    }
+    return const Icon(Icons.close);
+  });
+
   @override
   void initState() {
     loadSettings();
@@ -275,6 +283,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         SwitchListTile(
           title: const Text('Upload Over Other Networks'),
+          thumbIcon: _thumbIcon,
           subtitle:
               const Text('Images will be uploaded through other WiFi networks'),
           value: _otherNetworks,
@@ -287,6 +296,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         SwitchListTile(
           title: const Text('Upload Over Mobile Data'),
+          thumbIcon: _thumbIcon,
           subtitle: const Text('Images will be uploaded through mobile data'),
           value: _mobileData,
           onChanged: (bool value) {
@@ -299,6 +309,7 @@ class _SettingsPageState extends State<SettingsPage> {
         SwitchListTile(
           title:
               Text('Using Folder ${_folderMode ? "Include" : "Exclude"} List'),
+          thumbIcon: _thumbIcon,
           subtitle: Text(
               'Tap to use folder ${_folderMode ? "exclude" : "include"} mode'),
           value: _folderMode,
