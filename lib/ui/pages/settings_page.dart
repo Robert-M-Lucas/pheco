@@ -22,8 +22,8 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _mobileData = false;
   String _protocol = protocolOptions[0];
   String _selectedFrequency = frequencyOptions[0];
-
   final TextEditingController _localIpFieldController = TextEditingController();
+
   final TextEditingController _publicIpFieldController =
       TextEditingController();
   final TextEditingController _serverFolderController = TextEditingController();
@@ -34,7 +34,16 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _hidePassword = true;
   double _compressionQuality = 40;
   List<String> _folders = [];
-  bool _folderMode = false; // False is exclude
+  bool _folderMode = true; // False is exclude
+
+  bool _popOnSave = false;
+  final WidgetStateProperty<Icon?> _thumbIcon =
+      WidgetStateProperty.resolveWith<Icon?>((states) {
+    if (states.contains(WidgetState.selected)) {
+      return const Icon(Icons.check);
+    }
+    return const Icon(Icons.close);
+  });
 
   @override
   void initState() {
@@ -78,7 +87,7 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  Future<void> _verifySettings() async {
+  Future<void> _verifySettings(BuildContext context) async {
     final String? result;
     try {
       result = await settingsStore.setValues(
@@ -120,6 +129,7 @@ class _SettingsPageState extends State<SettingsPage> {
           );
         },
       );
+      _popOnSave = false;
       return;
     }
 
@@ -132,7 +142,7 @@ class _SettingsPageState extends State<SettingsPage> {
     }
 
     if (result != null) {
-      showDialog<bool>(
+      await showDialog<bool>(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
@@ -155,13 +165,17 @@ class _SettingsPageState extends State<SettingsPage> {
         },
       );
     }
+
+    if (_popOnSave) {
+      Navigator.of(context).pop();
+    }
   }
 
-  Future<void> _verifySettingsWrapper() async {
+  Future<void> _verifySettingsWrapper(BuildContext context) async {
     setState(() {
       _saving = true;
     });
-    await _verifySettings();
+    await _verifySettings(context);
     setState(() {
       _saving = false;
     });
@@ -319,6 +333,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         SwitchListTile(
           title: const Text('Upload Over Other Networks'),
+          thumbIcon: _thumbIcon,
           subtitle:
               const Text('Images will be uploaded through other WiFi networks'),
           value: _otherNetworks,
@@ -331,6 +346,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         SwitchListTile(
           title: const Text('Upload Over Mobile Data'),
+          thumbIcon: _thumbIcon,
           subtitle: const Text('Images will be uploaded through mobile data'),
           value: _mobileData,
           onChanged: (bool value) {
@@ -343,6 +359,7 @@ class _SettingsPageState extends State<SettingsPage> {
         SwitchListTile(
           title:
               Text('Using Folder ${_folderMode ? "Include" : "Exclude"} List'),
+          thumbIcon: _thumbIcon,
           subtitle: Text(
               'Tap to use folder ${_folderMode ? "exclude" : "include"} mode'),
           value: _folderMode,
@@ -479,41 +496,62 @@ class _SettingsPageState extends State<SettingsPage> {
           if (didPop) {
             return;
           }
-          final bool shouldPop =
-              _verified ? true : (await _showBackDialog() ?? false);
-          if (context.mounted && shouldPop) {
-            Navigator.pop(context);
+          if (_saving) {
+            if (!_popOnSave) {
+              _popOnSave = true;
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text("Please wait, saving in progress - will leave on save."),
+              ));
+            }
+          } else {
+            final bool shouldPop =
+                _verified ? true : (await _showBackDialog() ?? false);
+            if (context.mounted && shouldPop) {
+              Navigator.pop(context);
+            }
           }
         },
         child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            title:
-                const Text("Settings", style: TextStyle(color: Colors.white)),
-            iconTheme: const IconThemeData(color: Colors.white),
-          ),
-          body: _settingsOptions(context),
-          // floatingActionButton: FloatingActionButton(
-          //   onPressed: () async {
-          //     print("Refresh Button");
-          //     const platform = MethodChannel('com.example.pheco/channel');
-          //     await platform.invokeMethod('rescanMedia');
-          //     print("Refresh Complete");
-          //   },
-          //   tooltip: 'Ransack',
-          //   child: const Icon(Icons.refresh),
-          // ),
-          floatingActionButton: _verified
-              ? null
-              : FloatingActionButton(
-                  onPressed: _saving
-                      ? null
-                      : () {
-                          _verifySettingsWrapper();
-                        },
-                  tooltip: 'Save',
-                  child: const Icon(Icons.save),
-                ),
-        ));
+            appBar: AppBar(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              title:
+                  const Text("Settings", style: TextStyle(color: Colors.white)),
+              iconTheme: const IconThemeData(color: Colors.white),
+            ),
+            body: _settingsOptions(context),
+            // floatingActionButton: FloatingActionButton(
+            //   onPressed: () async {
+            //     print("Refresh Button");
+            //     const platform = MethodChannel('com.example.pheco/channel');
+            //     await platform.invokeMethod('rescanMedia');
+            //     print("Refresh Complete");
+            //   },
+            //   tooltip: 'Ransack',
+            //   child: const Icon(Icons.refresh),
+            // ),
+            floatingActionButton: floatingActionButton(context)));
+  }
+
+  FloatingActionButton? floatingActionButton(BuildContext context) {
+    if (_verified) {
+      return null;
+    } else {
+      if (_saving) {
+        return FloatingActionButton(
+          onPressed: () {},
+          tooltip: 'Saving...',
+          backgroundColor: Colors.grey,
+          child: const Icon(Icons.hourglass_top),
+        );
+      } else {
+        return FloatingActionButton(
+          onPressed: () {
+            _verifySettingsWrapper(context);
+          },
+          tooltip: 'Save',
+          child: const Icon(Icons.save),
+        );
+      }
+    }
   }
 }

@@ -6,6 +6,9 @@ enum GalleryType { local, serverOnly }
 
 Widget galleryContent(BuildContext context, List<String>? imageUris,
     String? selectedFolder, GalleryType galleryType) {
+  final portrait = MediaQuery.of(context).orientation == Orientation.portrait;
+  final crossAxisCount = portrait ? 2 : 4;
+
   return Center(
     child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -35,7 +38,7 @@ Widget galleryContent(BuildContext context, List<String>? imageUris,
                           sliver: SliverGrid.count(
                               crossAxisSpacing: 5,
                               mainAxisSpacing: 5,
-                              crossAxisCount: 2,
+                              crossAxisCount: crossAxisCount,
                               children: imageUris.where((e) {
                                 return selectedFolder == null
                                     ? true

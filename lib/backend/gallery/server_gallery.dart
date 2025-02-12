@@ -19,7 +19,7 @@ class ServerGallery extends GalleryInterface {
   }
 
   @override
-  void update() {
+  Future<void> update() async {
     // TODO: implement update
     // throw UnimplementedError();
   }

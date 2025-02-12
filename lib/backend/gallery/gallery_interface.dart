@@ -25,7 +25,7 @@ abstract class GalleryInterface {
     }
   }
 
-  void update();
+  Future<void> update();
 
   List<String>? getFolderList();
 

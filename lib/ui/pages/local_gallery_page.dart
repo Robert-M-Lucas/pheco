@@ -19,7 +19,6 @@ class _LocalGalleryPageState extends State<LocalGalleryPage> {
 
   @override
   void initState() {
-    // loadFiles();
     localGallery.registerUpdateCallback(() {
       setState(() {});
     }, () {
