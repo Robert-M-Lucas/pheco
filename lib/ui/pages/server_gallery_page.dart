@@ -55,6 +55,15 @@ class _ServerGalleryPageState extends State<ServerGalleryPage> {
 
   @override
   Widget build(BuildContext context) {
+    print("Connected: ${nasClient.isConnected()}");
+    if (nasClient.isConnected()) {
+      print("Interface: ${nasClient.interface()}");
+      nasClient.interface()?.listFoldersInDir("/").then((e) {
+        print("Folders");
+        print(e);
+      });
+    }
+
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.primary,

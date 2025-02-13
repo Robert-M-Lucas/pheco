@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lorem_ipsum/lorem_ipsum.dart';
 import 'package:pheco/main.dart';
 
-const int welcomeInfoVersion = 5;
+const int welcomeInfoVersion = 6;
 
 bool shouldShowWelcomePage() {
   return settingsStore.welcomeVersion() != welcomeInfoVersion;

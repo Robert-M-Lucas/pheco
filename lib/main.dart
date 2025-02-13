@@ -4,7 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pheco/backend/gallery/local_gallery.dart';
 import 'package:pheco/backend/gallery/server_gallery.dart';
-import 'package:pheco/backend/nas_interfaces/nas_client.dart';
+import 'package:pheco/backend/nas/nas_client.dart';
 import 'package:pheco/backend/settings_store.dart';
 import 'package:pheco/ui/pages/local_gallery_page.dart';
 import 'package:pheco/ui/pages/welcome_page.dart';
@@ -25,6 +25,8 @@ AndroidOptions _getAndroidOptions() {
 final secureStorage = FlutterSecureStorage(aOptions: _getAndroidOptions());
 
 void main() async {
+  print("Init");
+
   WidgetsFlutterBinding.ensureInitialized();
 
   settingsStore = SettingsStore();

@@ -1,23 +1,6 @@
-import 'package:pheco/backend/nas_interfaces/sftp_client.dart';
-import 'package:pheco/backend/utils.dart';
-
-abstract class NasInterface {
-  /// Tests the local and public connection, raising a `SettingsException` on error
-  /// and returning a `String` on a warning
-  Future<String?> testConnectionSettings();
-
-  /// Tries to connect through local and public connection, if either are disconnected
-  Future<void> connect();
-
-  /// Tests local and public connection, disconnecting either if they fail
-  Future<void> testConnections();
-
-  /// Disconnects local and public connection
-  Future<void> disconnect();
-
-  /// Returns whether there is a connection either through the local or public IP
-  bool isConnected();
-}
+import '../utils.dart';
+import 'interfaces/sftp_interface.dart';
+import 'nas_interface.dart';
 
 const List<String> protocolOptions = ['SFTP'];
 
@@ -60,8 +43,8 @@ ValidIp ipStringToPort(String ipString) {
   return ValidIp(justIp, port);
 }
 
-NasInterface getNasInterface(String nasType, String localIp, String publicIp,
-    String serverFolder, String username, String password) {
+NasConnectionInterface getNasInterface(String nasType, String localIp,
+    String publicIp, String serverFolder, String username, String password) {
   if (localIp.isEmpty) {
     throw SettingsException("Local IP must be set");
   }
@@ -73,7 +56,8 @@ NasInterface getNasInterface(String nasType, String localIp, String publicIp,
 
   switch (nasType) {
     case 'SFTP':
-      return PSftpClient(localIpV, publicIpV, serverFolder, username, password);
+      return SftpInterface(
+          localIpV, publicIpV, serverFolder, username, password);
     default:
       throw UnimplementedError();
   }

@@ -4,7 +4,7 @@ import 'package:pheco/backend/utils.dart';
 import 'package:pheco/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'nas_interfaces/nas_interface.dart';
+import 'nas/nas_utils.dart';
 
 const List<String> frequencyOptions = [
   'Manual',

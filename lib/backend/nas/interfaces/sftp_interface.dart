@@ -1,10 +1,12 @@
 import 'package:dartssh2/dartssh2.dart';
-import 'package:pheco/backend/nas_interfaces/nas_interface.dart';
+import 'package:pheco/backend/nas/nas_interface.dart';
 import 'package:pheco/backend/utils.dart';
 
-class PSftpClient implements NasInterface {
-  PSftpClient(this._localIp, this._publicIp, this._serverFolder, this._username,
-      this._password);
+import '../nas_utils.dart';
+
+class SftpInterface implements NasConnectionInterface, NasFileInterface {
+  SftpInterface(this._localIp, this._publicIp, this._serverFolder,
+      this._username, this._password);
 
   final ValidIp _localIp;
   final ValidIp? _publicIp;
@@ -14,9 +16,10 @@ class PSftpClient implements NasInterface {
 
   SftpClient? _localClient;
   SftpClient? _publicClient;
+  SftpClient? _getClient() => _localClient ?? _publicClient;
   bool _isConnecting = false;
 
-  Future<SSHClient> _getClient(ValidIp ip) async {
+  Future<SSHClient> _getSSHClient(ValidIp ip) async {
     return SSHClient(
       await SSHSocket.connect(ip.ip, ip.port,
           timeout: const Duration(milliseconds: connectionTimeoutMs)),
@@ -31,7 +34,7 @@ class PSftpClient implements NasInterface {
 
     Future<SSHClient?> getLocalClient() async {
       try {
-        return await _getClient(_localIp);
+        return await _getSSHClient(_localIp);
       } on Exception catch (e) {
         print(e);
       }
@@ -43,7 +46,7 @@ class PSftpClient implements NasInterface {
         return null;
       }
       try {
-        return await _getClient(_publicIp);
+        return await _getSSHClient(_publicIp);
       } on Exception catch (e) {
         print(e);
       }
@@ -109,7 +112,7 @@ class PSftpClient implements NasInterface {
 
     Future<SftpClient?> getLocalClient() async {
       try {
-        final sshClient = await _getClient(_localIp);
+        final sshClient = await _getSSHClient(_localIp);
         return await sshClient.sftp();
       } on Exception catch (e) {
         print(e);
@@ -122,7 +125,7 @@ class PSftpClient implements NasInterface {
         return null;
       }
       try {
-        final sshClient = await _getClient(_publicIp);
+        final sshClient = await _getSSHClient(_publicIp);
         return await sshClient.sftp();
       } on Exception catch (e) {
         print(e);
@@ -175,5 +178,32 @@ class PSftpClient implements NasInterface {
 
     print(
         "Connected clients -  Local: ${_localClient != null} | Public : ${_publicClient != null}");
+  }
+
+  @override
+  NasFileInterface getFileInterface() {
+    return this;
+  }
+
+  @override
+  Future<List<String>?> listFoldersInDir(String dir) async {
+    final clientN = _getClient();
+    if (clientN == null) {
+      return null;
+    }
+    final SftpClient client = clientN;
+
+    final List<SftpName> dirList;
+    try {
+      dirList = await client.listdir(dir);
+    } on Exception catch (e) {
+      print(e);
+      return null;
+    }
+
+    return dirList
+        .where((e) => e.attr.isDirectory)
+        .map((e) => e.filename)
+        .toList();
   }
 }

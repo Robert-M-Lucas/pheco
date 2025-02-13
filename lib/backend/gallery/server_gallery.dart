@@ -23,6 +23,7 @@ class ServerGallery extends GalleryInterface {
   Future<void> update() async {
     // TODO: implement update
     // throw UnimplementedError();
+    super.updateDependencies();
   }
 
   String? connectionError() {

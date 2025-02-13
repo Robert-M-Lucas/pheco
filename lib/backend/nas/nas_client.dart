@@ -1,7 +1,9 @@
-import 'package:pheco/backend/nas_interfaces/nas_interface.dart';
+import 'package:pheco/backend/nas/nas_interface.dart';
 import 'package:pheco/backend/utils.dart';
 import 'package:pheco/main.dart';
 import 'package:tuple/tuple.dart';
+
+import 'nas_utils.dart';
 
 const int connectionRetryMs = 10000;
 const String connectionToServerFailed = "Connection to server failed";
@@ -20,7 +22,9 @@ class NasClient {
 
   final List<Tuple2<Function(), bool Function()>> listeners = [];
 
-  NasInterface? _connection;
+  NasConnectionInterface? _connection;
+  NasFileInterface? interface() =>
+      isConnected() ? _connection!.getFileInterface() : null;
 
   void addUpdateListener(Function() permanentListener) {
     listeners.add(Tuple2(permanentListener, () {
@@ -37,11 +41,17 @@ class NasClient {
 
   Future<void> _retryConnection() async {
     if (_connection != null) {
+      final prevConnectionStatus = _connection!.isConnected();
+
       await _connection!.testConnections();
       await _connection!.connect();
 
       if (!_connection!.isConnected()) {
         _noConnectionReason = connectionToServerFailed;
+      }
+
+      if (prevConnectionStatus != _connection!.isConnected()) {
+        _updateListeners();
       }
     }
 
@@ -77,7 +87,7 @@ class NasClient {
 
     _updateListeners();
 
-    final NasInterface interface;
+    final NasConnectionInterface interface;
     try {
       interface = getNasInterface(
           settingsStore.protocol(),
