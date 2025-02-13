@@ -89,7 +89,7 @@ class CompressAndUploadAction implements ActionInterface {
   }
 
   @override
-  bool requireServerConnection() => false;
+  bool requireServerConnection() => true;
 
   @override
   bool requireValidSettings() => true;

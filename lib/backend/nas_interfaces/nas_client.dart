@@ -3,7 +3,10 @@ import 'package:pheco/backend/utils.dart';
 import 'package:pheco/main.dart';
 import 'package:tuple/tuple.dart';
 
-const int connectionRetryMs = 5000;
+const int connectionRetryMs = 10000;
+const String connectionToServerFailed = "Connection to server failed";
+const String badConnectionSettings = "Bad connection settings";
+const String setUpConnectionInSettings = "Set up connection in settings";
 
 class NasClient {
   NasClient() {
@@ -33,10 +36,13 @@ class NasClient {
   bool isConnected() => _connection?.isConnected() ?? false;
 
   Future<void> _retryConnection() async {
-    if (_connection != null &&
-        !_connection!.isConnected() &&
-        !_connection!.isConnecting()) {
+    if (_connection != null) {
+      await _connection!.testConnections();
       await _connection!.connect();
+
+      if (!_connection!.isConnected()) {
+        _noConnectionReason = connectionToServerFailed;
+      }
     }
 
     Future.delayed(const Duration(milliseconds: connectionRetryMs), () {
@@ -64,7 +70,7 @@ class NasClient {
     _connection = null;
 
     if (!settingsStore.validData()) {
-      _noConnectionReason = "Set up a connection in settings";
+      _noConnectionReason = setUpConnectionInSettings;
       _updateListeners();
       return;
     }
@@ -82,11 +88,11 @@ class NasClient {
           settingsStore.password());
     } on SettingsException catch (e) {
       print("Failed to set up connection (other) - $e");
-      _noConnectionReason = "Bad connection settings";
+      _noConnectionReason = badConnectionSettings;
       return;
     } on Exception catch (e) {
       print("Failed to set up connection (other) - $e");
-      _noConnectionReason = "Bad connection settings";
+      _noConnectionReason = badConnectionSettings;
       return;
     }
 
@@ -94,7 +100,7 @@ class NasClient {
     await _connection!.connect();
 
     if (!_connection!.isConnected()) {
-      _noConnectionReason = "Connection to server failed";
+      _noConnectionReason = connectionToServerFailed;
     } else {
       _noConnectionReason = "";
     }

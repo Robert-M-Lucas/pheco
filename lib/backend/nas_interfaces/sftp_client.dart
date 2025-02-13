@@ -15,8 +15,6 @@ class PSftpClient implements NasInterface {
   SftpClient? _localClient;
   SftpClient? _publicClient;
   bool _isConnecting = false;
-  @override
-  bool isConnecting() => _isConnecting;
 
   Future<SSHClient> _getClient(ValidIp ip) async {
     return SSHClient(
@@ -28,7 +26,7 @@ class PSftpClient implements NasInterface {
   }
 
   @override
-  Future<String?> testConnection() async {
+  Future<String?> testConnectionSettings() async {
     print("Testing local connection - $_localIp");
 
     Future<SSHClient?> getLocalClient() async {
@@ -102,6 +100,10 @@ class PSftpClient implements NasInterface {
 
   @override
   Future<void> connect() async {
+    if (_isConnecting) {
+      return;
+    }
+
     _isConnecting = true;
     print("Connecting clients");
 
@@ -132,17 +134,46 @@ class PSftpClient implements NasInterface {
         (_localClient == null ? [getLocalClient()] : <Future<SftpClient?>>[]) +
             (_publicClient == null ? [getPublicClient()] : []));
 
-    SftpClient? localClient = _localClient == null ? null : clients.removeAt(0);
-    SftpClient? publicClient =
-        _publicClient == null ? null : clients.removeAt(0);
+    SftpClient? localClient = _localClient ?? clients.removeAt(0);
+    SftpClient? publicClient = _publicClient ?? clients.removeAt(0);
 
     _localClient = localClient;
     _publicClient = publicClient;
+    print(
+        "Connected clients -  Local: ${_localClient != null} | Public : ${_publicClient != null}");
     _isConnecting = false;
   }
 
   @override
   bool isConnected() {
     return _localClient != null || _publicClient != null;
+  }
+
+  @override
+  Future<void> testConnections() async {
+    Future<void> testLocalConnection() async {
+      try {
+        await _localClient?.listdir("/");
+      } catch (e) {
+        print(e);
+        _localClient = null;
+      }
+    }
+
+    Future<void> testPublicConnection() async {
+      try {
+        await _publicClient?.listdir("/");
+      } catch (e) {
+        print(e);
+        _publicClient = null;
+      }
+    }
+
+    print("Testing connections");
+
+    await Future.wait([testLocalConnection(), testPublicConnection()]);
+
+    print(
+        "Connected clients -  Local: ${_localClient != null} | Public : ${_publicClient != null}");
   }
 }

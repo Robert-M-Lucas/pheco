@@ -2,15 +2,21 @@ import 'package:pheco/backend/nas_interfaces/sftp_client.dart';
 import 'package:pheco/backend/utils.dart';
 
 abstract class NasInterface {
-  Future<String?> testConnection();
+  /// Tests the local and public connection, raising a `SettingsException` on error
+  /// and returning a `String` on a warning
+  Future<String?> testConnectionSettings();
 
+  /// Tries to connect through local and public connection, if either are disconnected
   Future<void> connect();
 
+  /// Tests local and public connection, disconnecting either if they fail
+  Future<void> testConnections();
+
+  /// Disconnects local and public connection
   Future<void> disconnect();
 
+  /// Returns whether there is a connection either through the local or public IP
   bool isConnected();
-
-  bool isConnecting();
 }
 
 const List<String> protocolOptions = ['SFTP'];

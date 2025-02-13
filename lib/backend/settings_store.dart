@@ -125,7 +125,7 @@ class SettingsStore {
 
     final nasResponse = await getNasInterface(
             protocol, localIp, publicIp, serverFolder, username, password)
-        .testConnection();
+        .testConnectionSettings();
 
     await Future.wait([
       _sp.setBool(otherNetworksKey, otherNetworks),
