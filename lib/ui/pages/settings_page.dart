@@ -519,16 +519,6 @@ class _SettingsPageState extends State<SettingsPage> {
               iconTheme: const IconThemeData(color: Colors.white),
             ),
             body: _settingsOptions(context),
-            // floatingActionButton: FloatingActionButton(
-            //   onPressed: () async {
-            //     print("Refresh Button");
-            //     const platform = MethodChannel('com.example.pheco/channel');
-            //     await platform.invokeMethod('rescanMedia');
-            //     print("Refresh Complete");
-            //   },
-            //   tooltip: 'Ransack',
-            //   child: const Icon(Icons.refresh),
-            // ),
             floatingActionButton: floatingActionButton(context)));
   }
 
