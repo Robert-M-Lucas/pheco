@@ -203,14 +203,14 @@ class _RunPageState extends State<RunPage> {
                                       )),
                                 )),
                           ]) +
-                    (serverGallery.connectionError() == null
+                    (nasClient.isConnected()
                         ? []
                         : [
                             Padding(
                                 padding: const EdgeInsets.only(bottom: 8.0),
                                 child: Center(
                                   child: Text(
-                                      "No server connection: ${serverGallery.connectionError()!}",
+                                      "No server connection: ${nasClient.noConnectionReason()}",
                                       style: const TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,

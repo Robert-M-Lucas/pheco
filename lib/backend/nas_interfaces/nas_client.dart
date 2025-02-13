@@ -1,69 +1,104 @@
-import 'package:pheco/backend/nas_interfaces/sftp_client.dart';
+import 'package:pheco/backend/nas_interfaces/nas_interface.dart';
+import 'package:pheco/backend/utils.dart';
+import 'package:pheco/main.dart';
+import 'package:tuple/tuple.dart';
 
-import '../utils.dart';
+const int connectionRetryMs = 5000;
 
-abstract class NasClient {
-  Future<String?> testConnection();
-}
-
-const List<String> protocolOptions = ['SFTP'];
-
-ValidIp ipStringToPort(String ipString) {
-  final split = ipString.split(':');
-  if (split.length != 2) {
-    throw SettingsChangeException(
-        "[0] IPs must be formatted 123.456.789.123:4567");
-  }
-  final justIp = split[0];
-  final justPort = split[1];
-
-  final port = int.tryParse(justPort);
-  if (port == null) {
-    throw SettingsChangeException(
-        "[1] IPs must be formatted 123.456.789.123:4567");
+class NasClient {
+  NasClient() {
+    Future.delayed(const Duration(milliseconds: connectionRetryMs), () {
+      _retryConnection();
+    });
   }
 
-  if (port < 0 || port > 65535) {
-    throw SettingsChangeException("Port must be 0-65535");
+  String _noConnectionReason = "";
+  String noConnectionReason() => _noConnectionReason;
+
+  final List<Tuple2<Function(), bool Function()>> listeners = [];
+
+  NasInterface? _connection;
+
+  void addUpdateListener(Function() permanentListener) {
+    listeners.add(Tuple2(permanentListener, () {
+      return true;
+    }));
   }
 
-  final ipSplit = justIp.split(".");
-  if (ipSplit.length != 4) {
-    throw SettingsChangeException(
-        "[2] IPs must be formatted 123.456.789.123:4567");
+  void addTempUpdateListener(
+      Function() tempListener, bool Function() aliveCheck) {
+    listeners.add(Tuple2(tempListener, aliveCheck));
   }
 
-  ipSplit.map((e) {
-    final ipPart = int.tryParse(e);
-    if (ipPart == null) {
-      throw SettingsChangeException(
-          "[3] IPs must be formatted 123.456.789.123:4567");
+  bool isConnected() => _connection?.isConnected() ?? false;
+
+  Future<void> _retryConnection() async {
+    if (_connection != null &&
+        !_connection!.isConnected() &&
+        !_connection!.isConnecting()) {
+      await _connection!.connect();
     }
-    if (ipPart < 0 || ipPart > 255) {
-      throw SettingsChangeException(
-          "IP parts (e.g. xxx.123.123.123:1234) must be 0-255");
-    }
-    return ipPart;
-  });
 
-  return ValidIp(justIp, port);
-}
-
-NasClient getNasInterface(String nasType, String localIp, String publicIp,
-    String serverFolder, String username, String password) {
-  if (localIp.isEmpty) {
-    throw SettingsChangeException("Local IP must be set");
+    Future.delayed(const Duration(milliseconds: connectionRetryMs), () {
+      _retryConnection();
+    });
   }
 
-  final publicIpV = publicIp.isEmpty ? null : ipStringToPort(publicIp);
-  final localIpV = ipStringToPort(localIp);
+  void _updateListeners() {
+    var i = 0;
+    while (i < listeners.length) {
+      if (!listeners[i].item2()) {
+        listeners.removeAt(i);
+        continue;
+      }
+      i += 1;
+    }
 
-  print("Getting nas client");
+    for (final t in listeners) {
+      t.item1();
+    }
+  }
 
-  switch (nasType) {
-    case 'SFTP':
-      return PSftpClient(localIpV, publicIpV, serverFolder, username, password);
-    default:
-      throw UnimplementedError();
+  Future<void> update() async {
+    _connection?.disconnect();
+    _connection = null;
+
+    if (!settingsStore.validData()) {
+      _noConnectionReason = "Set up a connection in settings";
+      _updateListeners();
+      return;
+    }
+
+    _updateListeners();
+
+    final NasInterface interface;
+    try {
+      interface = getNasInterface(
+          settingsStore.protocol(),
+          settingsStore.localIp(),
+          settingsStore.publicIp(),
+          settingsStore.serverFolder(),
+          settingsStore.username(),
+          settingsStore.password());
+    } on SettingsException catch (e) {
+      print("Failed to set up connection (other) - $e");
+      _noConnectionReason = "Bad connection settings";
+      return;
+    } on Exception catch (e) {
+      print("Failed to set up connection (other) - $e");
+      _noConnectionReason = "Bad connection settings";
+      return;
+    }
+
+    _connection = interface;
+    await _connection!.connect();
+
+    if (!_connection!.isConnected()) {
+      _noConnectionReason = "Connection to server failed";
+    } else {
+      _noConnectionReason = "";
+    }
+
+    _updateListeners();
   }
 }

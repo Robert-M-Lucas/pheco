@@ -88,6 +88,12 @@ class CompressAndUploadAction implements ActionInterface {
     }
   }
 
+  @override
+  bool requireServerConnection() => false;
+
+  @override
+  bool requireValidSettings() => true;
+
   Future<bool> _saveFile(
       Uint8List uint8List, String filePath, Function(String) printer) async {
     // Request storage permission (needed for Android 10 and below)
@@ -101,65 +107,4 @@ class CompressAndUploadAction implements ActionInterface {
     final result = await file.writeAsBytes(uint8List);
     return true;
   }
-
-  @override
-  bool requireServerConnection() => true;
-
-  @override
-  bool requireValidSettings() => true;
 }
-
-// Future<void> recompressFiles() async {
-//   consoleText("DEBUG: Only working in testing folder");
-//   consoleText("DEBUG: Using fixed compression quality");
-//   String folder = "/storage/emulated/0/Pictures/Testing";
-//
-//   consoleText("| Getting image list");
-//   Stopwatch s2 = Stopwatch()..start();
-//   final List<dynamic> imagesU = await platform.invokeMethod('getImages');
-//   s2.stop();
-//   print("Done - ${s2.elapsedMilliseconds}ms");
-//
-//   consoleText("| Processing ${imagesU.length} images and deleting existing");
-//   await Future.delayed(const Duration(milliseconds: 500));
-//   List<String> images = [];
-//   for (var i in imagesU) {
-//     final s = i.toString();
-//     if (File(i.toString()).parent.path != folder) {
-//       continue;
-//     }
-//
-//     final split = s.split(".");
-//     final pheco = split.length > 2 && split[split.length - 2] == "pheco";
-//     if (pheco) {
-//       consoleText("Removing '$s'");
-//       await platform.invokeMethod('deleteMediaFile', {'path': s});
-//       continue;
-//     }
-//
-//     images.add(i.toString());
-//   }
-//   consoleText("| Compressing ${images.length} images");
-//   await Future.delayed(const Duration(milliseconds: 500));
-//
-//   for (var i in images) {
-//     consoleText("Compressing '$i'");
-//     File file = File(i);
-//     var result = await FlutterImageCompress.compressWithFile(
-//       file.absolute.path,
-//       quality: 40,
-//     );
-//
-//     if (result == null) {
-//       consoleText("Compression Failed");
-//       continue;
-//     }
-//
-//     var split = i.split(".");
-//     split.insert(split.length - 1, "pheco");
-//     final newName = split.join(".");
-//     consoleText("Saving '$newName'");
-//     await saveFile(result, newName);
-//     await platform.invokeMethod('rescanMedia', {'path': newName});
-//   }
-// }

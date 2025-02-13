@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:pheco/backend/gallery/gallery_interface.dart';
+import 'package:pheco/main.dart';
 
 class ServerGallery extends GalleryInterface {
   List<String>? images;
@@ -25,7 +26,10 @@ class ServerGallery extends GalleryInterface {
   }
 
   String? connectionError() {
-    return "Set up a connection in settings";
+    if (nasClient.isConnected()) {
+      return null;
+    }
+    return nasClient.noConnectionReason();
   }
 
   @override

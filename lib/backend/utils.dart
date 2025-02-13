@@ -1,6 +1,6 @@
-class SettingsChangeException implements Exception {
+class SettingsException implements Exception {
   String cause;
-  SettingsChangeException(this.cause);
+  SettingsException(this.cause);
 }
 
 class ValidIp {

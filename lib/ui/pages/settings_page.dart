@@ -1,12 +1,11 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:pheco/backend/nas_interfaces/nas_interface.dart';
 import 'package:pheco/backend/settings_store.dart';
 import 'package:pheco/main.dart';
 import 'package:pheco/ui/pages/about_page.dart';
 import 'package:path/path.dart' as path;
 import 'package:pheco/backend/utils.dart';
-
-import '../../backend/nas_interfaces/nas_client.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -103,7 +102,7 @@ class _SettingsPageState extends State<SettingsPage> {
           _compressionQuality.toInt(),
           _folderMode,
           _folders);
-    } on SettingsChangeException catch (p) {
+    } on SettingsException catch (p) {
       if (!mounted) {
         return;
       }
@@ -148,7 +147,7 @@ class _SettingsPageState extends State<SettingsPage> {
           return AlertDialog(
             title: const Text('Settings Saved'),
             content: Text(
-              result!,
+              "${result!}\nSettings saved.",
             ),
             actions: <Widget>[
               TextButton(
@@ -500,7 +499,8 @@ class _SettingsPageState extends State<SettingsPage> {
             if (!_popOnSave) {
               _popOnSave = true;
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text("Please wait, saving in progress - will leave on save."),
+                content: Text(
+                    "Please wait, saving in progress - will leave on save."),
               ));
             }
           } else {

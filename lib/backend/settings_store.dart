@@ -1,9 +1,10 @@
 import 'dart:io';
 
-import 'package:pheco/backend/nas_interfaces/nas_client.dart';
 import 'package:pheco/backend/utils.dart';
 import 'package:pheco/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'nas_interfaces/nas_interface.dart';
 
 const List<String> frequencyOptions = [
   'Manual',
@@ -106,20 +107,19 @@ class SettingsStore {
       bool folderMode,
       List<String> folders) async {
     if (!protocolOptions.contains(protocol)) {
-      throw SettingsChangeException("Invalid protocol");
+      throw SettingsException("Invalid protocol");
     }
     if (!frequencyOptions.contains(frequency)) {
-      throw SettingsChangeException("Invalid frequency");
+      throw SettingsException("Invalid frequency");
     }
 
     if (compressionQuality < 5 || compressionQuality > 95) {
-      throw SettingsChangeException("Invalid compression quality");
+      throw SettingsException("Invalid compression quality");
     }
 
     for (final f in folders) {
       if (await Directory(f).exists()) {
-        throw SettingsChangeException(
-            "Folder '${Directory(f).path}' doesn't exist");
+        throw SettingsException("Folder '${Directory(f).path}' doesn't exist");
       }
     }
 
