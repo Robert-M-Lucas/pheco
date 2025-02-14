@@ -1,5 +1,5 @@
 
-abstract class NasConnectionInterface {
+abstract interface class NasConnectionInterface {
   /// Tests the local and public connection, raising a `SettingsException` on error
   /// and returning a `String` on a warning
   Future<String?> testConnectionSettings();
@@ -19,7 +19,7 @@ abstract class NasConnectionInterface {
   NasFileInterface getFileInterface();
 }
 
-abstract class NasFileInterface {
+abstract interface class NasFileInterface {
   /// Returns a list of folders in the specified directory
   Future<List<String>?> listFoldersInDir(String dir);
 }

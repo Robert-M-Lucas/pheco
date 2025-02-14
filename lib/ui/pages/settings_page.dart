@@ -45,14 +45,6 @@ class _SettingsPageState extends State<SettingsPage> {
     return const Icon(Icons.close);
   });
 
-  final WidgetStateProperty<Icon?> _thumbIcon =
-  WidgetStateProperty.resolveWith<Icon?>((states) {
-    if (states.contains(WidgetState.selected)) {
-      return const Icon(Icons.check);
-    }
-    return const Icon(Icons.close);
-  });
-
   @override
   void initState() {
     loadSettings();
