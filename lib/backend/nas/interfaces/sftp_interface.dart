@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dartssh2/dartssh2.dart';
 import 'package:pheco/backend/nas/nas_interface.dart';
 import 'package:pheco/backend/utils.dart';
@@ -30,61 +32,37 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
 
   @override
   Future<String?> testConnectionSettings() async {
-    print("Testing local connection - $_localIp");
-
-    Future<SSHClient?> getLocalClient() async {
-      try {
-        return await _getSSHClient(_localIp);
-      } on Exception catch (e) {
-        print(e);
-      }
-      return null;
-    }
-
-    Future<SSHClient?> getPublicClient() async {
-      if (_publicIp == null) {
-        return null;
-      }
-      try {
-        return await _getSSHClient(_publicIp);
-      } on Exception catch (e) {
-        print(e);
-      }
-      return null;
-    }
-
     print("Testing local/public connection");
-    final clients =
-        await Future.wait<SSHClient?>([getLocalClient(), getPublicClient()]);
 
-    SSHClient? localClient = clients[0];
-    SSHClient? publicClient = clients[1];
+    await connect();
 
-    print("Local: ${localClient != null} | Public: ${publicClient != null}");
-
-    if (localClient == null && _publicIp == null) {
+    if (!isConnected()) {
       throw SettingsException(
           "Failed to connect to server through public or private IP");
     }
 
     print("Testing authentication / SFTP");
 
-    final SftpClient testClient;
+    final bool initialised;
     try {
-      testClient = await (localClient ?? publicClient!).sftp();
-      print(await testClient.listdir("/"));
+      initialised = await initialiseRootDir();
     } catch (e) {
       print(e);
       throw SettingsException(
           "Failed to authenticate with SFTP server. Check username and password.");
     }
 
+    if (!initialised) {
+      throw SettingsException(
+          "Failed to initialise directory. Check the path.");
+    }
+
     print("Done");
 
-    if (localClient == null) {
+    if (_localClient == null) {
       return "Failed to connect through local IP but succeeded through public IP.";
     }
-    if (publicClient == null && _publicIp != null) {
+    if (_publicClient == null && _publicIp != null) {
       return "Failed to connect through public IP but succeeded through local IP.";
     }
     return null;
@@ -106,6 +84,8 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
     if (_isConnecting) {
       return;
     }
+
+    final prevConnected = isConnected();
 
     _isConnecting = true;
     print("Connecting clients");
@@ -144,6 +124,11 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
     _publicClient = publicClient;
     print(
         "Connected clients -  Local: ${_localClient != null} | Public : ${_publicClient != null}");
+
+    if (isConnected() && !prevConnected) {
+      await initialiseRootDir();
+    }
+
     _isConnecting = false;
   }
 
@@ -205,5 +190,58 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
         .where((e) => e.attr.isDirectory)
         .map((e) => e.filename)
         .toList();
+  }
+
+  @override
+  Future<bool> dirExists(String dir) async {
+    final client = _getClient();
+    if (client == null) {
+      return false;
+    }
+    return await client
+        .readdir(Directory(dir).parent.path)
+        .isEmpty
+        .then((_) => true)
+        .onError((_, __) => false);
+  }
+
+  @override
+  Future<bool> createAllDirs(String dir) async {
+    print("Create all dirs: $dir");
+    final client = _getClient();
+    if (client == null) {
+      return false;
+    }
+
+    if (await dirExists(dir)) {
+      print("Dir exists");
+      return true;
+    }
+
+    final split = dir.split('/').toList();
+    split.removeAt(0);
+    var currentDir = "";
+    var finalResult = false;
+
+    for (final part in split) {
+      currentDir += "/$part";
+      try {
+        print("Creating $currentDir");
+        finalResult = await client
+            .mkdir(currentDir)
+            .then((_) => true)
+            .onError((_, __) => false);
+        print(finalResult);
+      } on Exception catch (e) {
+        print(e);
+      }
+    }
+
+    return await dirExists(dir);
+  }
+
+  @override
+  Future<bool> initialiseRootDir() async {
+    return await createAllDirs(_serverFolder);
   }
 }

@@ -23,6 +23,7 @@ class NasClient {
   final List<Tuple2<Function(), bool Function()>> listeners = [];
 
   NasConnectionInterface? _connection;
+
   NasFileInterface? interface() =>
       isConnected() ? _connection!.getFileInterface() : null;
 
@@ -39,18 +40,23 @@ class NasClient {
 
   bool isConnected() => _connection?.isConnected() ?? false;
 
+  void disconnect() {
+    _connection?.disconnect();
+    _connection = null;
+  }
+
   Future<void> _retryConnection() async {
     if (_connection != null) {
-      final prevConnectionStatus = _connection!.isConnected();
+      final prevConnectionStatus = _connection?.isConnected() ?? false;
 
-      await _connection!.testConnections();
-      await _connection!.connect();
+      await _connection?.testConnections();
+      await _connection?.connect();
 
-      if (!_connection!.isConnected()) {
+      if (!(_connection?.isConnected() ?? false)) {
         _noConnectionReason = connectionToServerFailed;
       }
 
-      if (prevConnectionStatus != _connection!.isConnected()) {
+      if (prevConnectionStatus != _connection?.isConnected()) {
         _updateListeners();
       }
     }

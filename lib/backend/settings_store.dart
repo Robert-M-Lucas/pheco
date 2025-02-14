@@ -32,8 +32,6 @@ const String welcomeVersionKey = "welcomeVersion";
 class SettingsStore {
   final List<Function()> listeners = [];
 
-  bool _initialised = false;
-
   late SharedPreferences _sp;
 
   bool _validData = false;
@@ -84,8 +82,6 @@ class SettingsStore {
       _compressionQuality = _sp.getInt(compressionQualityKey)!;
       _folderMode = _sp.getBool(folderModeKey)!;
       _folders = _sp.getStringList(foldersKey)!;
-
-      _initialised = true;
     }
 
     _welcomeVersion = _sp.getInt(welcomeVersionKey);
@@ -123,9 +119,20 @@ class SettingsStore {
       }
     }
 
-    final nasResponse = await getNasInterface(
-            protocol, localIp, publicIp, serverFolder, username, password)
-        .testConnectionSettings();
+    // Required to not interfere
+    nasClient.disconnect();
+    await Future.delayed(const Duration(milliseconds: connectionTimeoutMs));
+
+    final String? nasResponse;
+    try {
+      nasResponse = await getNasInterface(
+              protocol, localIp, publicIp, serverFolder, username, password)
+          .testConnectionSettings();
+    } on Exception {
+      // Ensure nasClient is restarted
+      _updateListeners();
+      rethrow;
+    }
 
     await Future.wait([
       _sp.setBool(otherNetworksKey, otherNetworks),
