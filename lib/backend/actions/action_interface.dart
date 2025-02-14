@@ -9,7 +9,7 @@ const List<ActionInterface> allActions = [
   RescanMediaStoreAction()
 ];
 
-abstract class ActionInterface {
+abstract interface class ActionInterface {
   Icon getIcon();
 
   String getName();
