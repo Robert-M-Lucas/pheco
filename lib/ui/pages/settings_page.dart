@@ -4,8 +4,9 @@ import 'package:pheco/backend/settings_store.dart';
 import 'package:pheco/main.dart';
 import 'package:pheco/ui/pages/about_page.dart';
 import 'package:path/path.dart' as path;
+import 'package:pheco/backend/utils.dart';
 
-import '../../backend/nas_interfaces/nas_client.dart';
+import '../../backend/nas/nas_utils.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -16,12 +17,13 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool _verified = false;
+  bool _saving = false;
   bool _otherNetworks = true;
   bool _mobileData = false;
   String _protocol = protocolOptions[0];
   String _selectedFrequency = frequencyOptions[0];
-
   final TextEditingController _localIpFieldController = TextEditingController();
+
   final TextEditingController _publicIpFieldController =
       TextEditingController();
   final TextEditingController _serverFolderController = TextEditingController();
@@ -32,7 +34,16 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _hidePassword = true;
   double _compressionQuality = 40;
   List<String> _folders = [];
-  bool _folderMode = false; // False is exclude
+  bool _folderMode = true; // False is exclude
+
+  bool _popOnSave = false;
+  final WidgetStateProperty<Icon?> _thumbIcon =
+      WidgetStateProperty.resolveWith<Icon?>((states) {
+    if (states.contains(WidgetState.selected)) {
+      return const Icon(Icons.check);
+    }
+    return const Icon(Icons.close);
+  });
 
   final WidgetStateProperty<Icon?> _thumbIcon =
   WidgetStateProperty.resolveWith<Icon?>((states) {
@@ -65,13 +76,13 @@ class _SettingsPageState extends State<SettingsPage> {
       _serverFolderController.text = settingsStore.serverFolder();
       _usernameFieldController.text = settingsStore.username();
       _passwordFieldController.text = settingsStore.password();
-      _compressionQuality = settingsStore.compressionQuality() as double;
+      _compressionQuality = settingsStore.compressionQuality().toDouble();
       _folders = settingsStore.folders();
       _folderMode = settingsStore.folderMode();
     });
   }
 
-  Future<void> pickFolder(BuildContext context) async {
+  Future<void> _pickFolder(BuildContext context) async {
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
 
     if (selectedDirectory != null) {
@@ -84,33 +95,68 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  Future<String?> verifySettings() async {
-    final result = await settingsStore.setValues(
-        _otherNetworks,
-        _mobileData,
-        _protocol,
-        _selectedFrequency,
-        _localIpFieldController.text,
-        _publicIpFieldController.text,
-        _serverFolderController.text,
-        _usernameFieldController.text,
-        _passwordFieldController.text,
-        _compressionQuality as int,
-        _folderMode,
-        _folders);
-
-    if (result == null) {
-      setState(() {
-        _verified = true;
-      });
-    } else {
+  Future<void> _verifySettings(BuildContext context) async {
+    final String? result;
+    try {
+      result = await settingsStore.setValues(
+          _otherNetworks,
+          _mobileData,
+          _protocol,
+          _selectedFrequency,
+          _localIpFieldController.text,
+          _publicIpFieldController.text,
+          _serverFolderController.text,
+          _usernameFieldController.text,
+          _passwordFieldController.text,
+          _compressionQuality.toInt(),
+          _folderMode,
+          _folders);
+    } on SettingsException catch (p) {
+      if (!mounted) {
+        return;
+      }
       showDialog<bool>(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: const Text('Setting verification failed'),
+            title: const Text('Settings verification failed'),
             content: Text(
-              result,
+              p.cause,
+            ),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: const Text('Ok'),
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+              ),
+            ],
+          );
+        },
+      );
+      _popOnSave = false;
+      return;
+    }
+
+    setState(() {
+      _verified = true;
+    });
+
+    if (!mounted) {
+      return;
+    }
+
+    if (result != null) {
+      await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Settings Saved'),
+            content: Text(
+              "${result!}\nSettings saved.",
             ),
             actions: <Widget>[
               TextButton(
@@ -128,10 +174,22 @@ class _SettingsPageState extends State<SettingsPage> {
       );
     }
 
-    return result;
+    if (_popOnSave) {
+      Navigator.of(context).pop();
+    }
   }
 
-  Widget settingsOptions(BuildContext context) {
+  Future<void> _verifySettingsWrapper(BuildContext context) async {
+    setState(() {
+      _saving = true;
+    });
+    await _verifySettings(context);
+    setState(() {
+      _saving = false;
+    });
+  }
+
+  Widget _settingsOptions(BuildContext context) {
     return ListView(
       children: [
         const Padding(
@@ -325,7 +383,7 @@ class _SettingsPageState extends State<SettingsPage> {
           trailing: IconButton(
               icon: const Icon(Icons.add),
               onPressed: () {
-                pickFolder(context);
+                _pickFolder(context);
               }),
         ),
         Column(
@@ -427,7 +485,7 @@ class _SettingsPageState extends State<SettingsPage> {
               style: TextButton.styleFrom(
                 textStyle: Theme.of(context).textTheme.labelLarge,
               ),
-              child: const Text('Verify & Save'),
+              child: const Text('Go Back'),
               onPressed: () {
                 Navigator.pop(context, false);
               },
@@ -446,38 +504,53 @@ class _SettingsPageState extends State<SettingsPage> {
           if (didPop) {
             return;
           }
-          final bool shouldPop = await _showBackDialog() ?? false;
-          if (context.mounted && shouldPop) {
-            Navigator.pop(context);
+          if (_saving) {
+            if (!_popOnSave) {
+              _popOnSave = true;
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text(
+                    "Please wait, saving in progress - will leave on save."),
+              ));
+            }
+          } else {
+            final bool shouldPop =
+                _verified ? true : (await _showBackDialog() ?? false);
+            if (context.mounted && shouldPop) {
+              Navigator.pop(context);
+            }
           }
         },
         child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            title:
-                const Text("Settings", style: TextStyle(color: Colors.white)),
-            iconTheme: const IconThemeData(color: Colors.white),
-          ),
-          body: settingsOptions(context),
-          // floatingActionButton: FloatingActionButton(
-          //   onPressed: () async {
-          //     print("Refresh Button");
-          //     const platform = MethodChannel('com.example.pheco/channel');
-          //     await platform.invokeMethod('rescanMedia');
-          //     print("Refresh Complete");
-          //   },
-          //   tooltip: 'Ransack',
-          //   child: const Icon(Icons.refresh),
-          // ),
-          floatingActionButton: _verified
-              ? null
-              : FloatingActionButton(
-                  onPressed: () {
-                    verifySettings();
-                  },
-                  tooltip: 'Save',
-                  child: const Icon(Icons.save),
-                ),
-        ));
+            appBar: AppBar(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              title:
+                  const Text("Settings", style: TextStyle(color: Colors.white)),
+              iconTheme: const IconThemeData(color: Colors.white),
+            ),
+            body: _settingsOptions(context),
+            floatingActionButton: floatingActionButton(context)));
+  }
+
+  FloatingActionButton? floatingActionButton(BuildContext context) {
+    if (_verified) {
+      return null;
+    } else {
+      if (_saving) {
+        return FloatingActionButton(
+          onPressed: () {},
+          tooltip: 'Saving...',
+          backgroundColor: Colors.grey,
+          child: const Icon(Icons.hourglass_top),
+        );
+      } else {
+        return FloatingActionButton(
+          onPressed: () {
+            _verifySettingsWrapper(context);
+          },
+          tooltip: 'Save',
+          child: const Icon(Icons.save),
+        );
+      }
+    }
   }
 }

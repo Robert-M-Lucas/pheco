@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
-
-import '../pages/settings_page.dart';
+import 'package:pheco/ui/pages/settings_page.dart';
 
 Widget galleryDrawer(BuildContext context, List<String>? folderList,
     Function(String?) setFolder) {

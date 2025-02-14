@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:pheco/main.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
 import 'package:path/path.dart' as path;
+import 'package:pheco/ui/shared/gallery_content.dart';
 import 'package:pheco/ui/shared/gallery_drawer.dart';
 import 'package:pheco/ui/shared/main_bottom_bar.dart';
-
-import '../shared/gallery_content.dart';
 
 class LocalGalleryPage extends StatefulWidget {
   const LocalGalleryPage({super.key});
@@ -19,7 +18,6 @@ class _LocalGalleryPageState extends State<LocalGalleryPage> {
 
   @override
   void initState() {
-    // loadFiles();
     localGallery.registerUpdateCallback(() {
       setState(() {});
     }, () {

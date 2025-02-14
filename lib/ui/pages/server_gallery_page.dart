@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:pheco/main.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
 import 'package:path/path.dart' as path;
+import 'package:pheco/ui/shared/gallery_content.dart';
 import 'package:pheco/ui/shared/gallery_drawer.dart';
 import 'package:pheco/ui/shared/main_bottom_bar.dart';
-
-import '../shared/gallery_content.dart';
 
 class ServerGalleryPage extends StatefulWidget {
   const ServerGalleryPage({super.key});
@@ -56,6 +55,15 @@ class _ServerGalleryPageState extends State<ServerGalleryPage> {
 
   @override
   Widget build(BuildContext context) {
+    print("Connected: ${nasClient.isConnected()}");
+    if (nasClient.isConnected()) {
+      print("Interface: ${nasClient.interface()}");
+      nasClient.interface()?.listFoldersInDir("/").then((e) {
+        print("Folders");
+        print(e);
+      });
+    }
+
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.primary,

@@ -12,14 +12,14 @@ class LocalGallery extends GalleryInterface {
       MethodChannel('com.example.pheco/channel');
 
   @override
-  void initialiseIfUninitialised() async {
+  Future<void> initialiseIfUninitialised() async {
     if ((images == null || folders == null) && !updating) {
       update();
     }
   }
 
   @override
-  void update() async {
+  Future<void> update() async {
     updating = true;
 
     final List<String> tImages =

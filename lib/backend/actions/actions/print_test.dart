@@ -5,19 +5,13 @@ class PrintTestAction implements ActionInterface {
   const PrintTestAction();
 
   @override
-  Icon getIcon() {
-    return const Icon(Icons.print);
-  }
+  Icon getIcon() => const Icon(Icons.print);
 
   @override
-  String getName() {
-    return "Print Test";
-  }
+  String getName() => "Print Test";
 
   @override
-  String getSubtitle() {
-    return "Tests printing.";
-  }
+  String getSubtitle() => "Tests printing.";
 
   @override
   Future<void> run(Function(String) printer) async {
@@ -26,4 +20,10 @@ class PrintTestAction implements ActionInterface {
     await Future.delayed(const Duration(milliseconds: 1000));
     printer("Done delaying");
   }
+
+  @override
+  bool requireServerConnection() => false;
+
+  @override
+  bool requireValidSettings() => false;
 }

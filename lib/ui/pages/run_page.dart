@@ -1,8 +1,4 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:pheco/backend/actions/action_interface.dart';
 import 'package:pheco/main.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
@@ -52,6 +48,21 @@ class _RunPageState extends State<RunPage> {
     //   }
     //   print(call);
     // });
+
+    localGallery.registerUpdateCallback(() {
+      setState(() {});
+    }, () {
+      return mounted;
+    });
+    localGallery.initialiseIfUninitialised();
+
+    serverGallery.registerUpdateCallback(() {
+      setState(() {});
+    }, () {
+      return mounted;
+    });
+    serverGallery.initialiseIfUninitialised();
+
     super.initState();
   }
 
@@ -138,21 +149,6 @@ class _RunPageState extends State<RunPage> {
   //   }
   // }
 
-  Future<void> saveFile(Uint8List uint8List, String filePath) async {
-    // Request storage permission (needed for Android 10 and below)
-    if (await Permission.storage.request().isDenied) {
-      print("Storage permission denied");
-      return;
-    }
-
-    // Write the file
-    File file = File(filePath);
-    final result = await file.writeAsBytes(uint8List);
-    print(result);
-
-    print("File saved to: $filePath");
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -189,14 +185,32 @@ class _RunPageState extends State<RunPage> {
                         )),
                       ) as Widget,
                     ] +
-                    (serverGallery.connectionError() == null
+                    (settingsStore.validData()
+                        ? []
+                        : [
+                            Padding(
+                                padding: EdgeInsets.only(
+                                    bottom:
+                                        serverGallery.connectionError() == null
+                                            ? 8.0
+                                            : 0.00),
+                                child: const Center(
+                                  child: Text("Settings aren't configured",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.red,
+                                      )),
+                                )),
+                          ]) +
+                    (nasClient.isConnected()
                         ? []
                         : [
                             Padding(
                                 padding: const EdgeInsets.only(bottom: 8.0),
                                 child: Center(
                                   child: Text(
-                                      "No server connection: ${serverGallery.connectionError()!}",
+                                      "No server connection: ${nasClient.noConnectionReason()}",
                                       style: const TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
@@ -208,7 +222,11 @@ class _RunPageState extends State<RunPage> {
                       return ListTile(
                         leading: e.getIcon(),
                         title: Text(e.getName()),
-                        enabled: !_runningTask,
+                        enabled: !(_runningTask ||
+                            (e.requireValidSettings() &&
+                                !settingsStore.validData()) ||
+                            (e.requireServerConnection() &&
+                                !serverGallery.isInitialised())),
                         subtitle: Text(e.getSubtitle()),
                         onTap: () async {
                           setState(() {
@@ -229,7 +247,7 @@ class _RunPageState extends State<RunPage> {
                     }).toList()
                 // ListTile(
                 //   leading: const Icon(Icons.compress),
-                //   title: const Text('Compress Files'),
+                //   title: const Text('Compress & Upload Files'),
                 //   enabled: !_runningTask,
                 //   subtitle: const Text(
                 //       'Compress uncompressed files and transfer originals to server - this is the action that can be scheduled in the settings.'),
