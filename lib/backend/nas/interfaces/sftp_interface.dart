@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dartssh2/dartssh2.dart';
 import 'package:pheco/backend/nas/nas_interface.dart';
@@ -7,12 +8,17 @@ import 'package:pheco/backend/utils.dart';
 import '../nas_utils.dart';
 
 class SftpInterface implements NasConnectionInterface, NasFileInterface {
-  SftpInterface(this._localIp, this._publicIp, this._serverFolder,
-      this._username, this._password);
+  SftpInterface(this._localIp, this._publicIp, serverFolder,
+      this._username, this._password) {
+    if (!serverFolder.endsWith('/')) {
+      serverFolder += '/';
+    }
+    _serverFolder = serverFolder;
+  }
 
   final ValidIp _localIp;
   final ValidIp? _publicIp;
-  final String _serverFolder;
+  late final String _serverFolder;
   final String _username;
   final String _password;
 
@@ -171,7 +177,7 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
   }
 
   @override
-  Future<List<String>?> listFoldersInDir(String dir) async {
+  Future<List<String>?> listFoldersInDirRelative(String dir) async {
     final clientN = _getClient();
     if (clientN == null) {
       return null;
@@ -180,7 +186,7 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
 
     final List<SftpName> dirList;
     try {
-      dirList = await client.listdir(dir);
+      dirList = await client.listdir(_serverFolder + dir);
     } on Exception catch (e) {
       print(e);
       return null;
@@ -193,7 +199,7 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
   }
 
   @override
-  Future<bool> dirExists(String dir) async {
+  Future<bool> dirExistsRelative(String dir) async {
     final client = _getClient();
     if (client == null) {
       return false;
@@ -206,14 +212,14 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
   }
 
   @override
-  Future<bool> createAllDirs(String dir) async {
+  Future<bool> createAllDirsAbsolute(String dir) async {
     print("Create all dirs: $dir");
     final client = _getClient();
     if (client == null) {
       return false;
     }
 
-    if (await dirExists(dir)) {
+    if (await dirExistsRelative(dir)) {
       print("Dir exists");
       return true;
     }
@@ -237,11 +243,40 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
       }
     }
 
-    return await dirExists(dir);
+    return await dirExistsRelative(dir);
   }
 
   @override
   Future<bool> initialiseRootDir() async {
-    return await createAllDirs(_serverFolder);
+    return await createAllDirsAbsolute(_serverFolder);
+  }
+
+  @override
+  Future<Stream<Uint8List>?> getFileRelative(String path) async {
+    final client = _getClient();
+    if (client == null) {
+      return null;
+    }
+
+    final file = await client.open(_serverFolder + path);
+    return file.read();
+  }
+
+  @override
+  Future<bool> writeFileRelative(String path, Uint8List contents) async {
+    final client = _getClient();
+    if (client == null) {
+      return false;
+    }
+
+    final file = await client.open(_serverFolder + path);
+    try {
+      await file.writeBytes(contents);
+    }
+    on Exception catch(e) {
+      print(e);
+      return false;
+    }
+    return true;
   }
 }

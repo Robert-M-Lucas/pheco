@@ -58,7 +58,7 @@ class _ServerGalleryPageState extends State<ServerGalleryPage> {
     print("Connected: ${nasClient.isConnected()}");
     if (nasClient.isConnected()) {
       print("Interface: ${nasClient.interface()}");
-      nasClient.interface()?.listFoldersInDir("/").then((e) {
+      nasClient.interface()?.listFoldersInDirRelative("/").then((e) {
         print("Folders");
         print(e);
       });

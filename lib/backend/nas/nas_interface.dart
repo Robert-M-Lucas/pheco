@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 abstract class NasConnectionInterface {
   /// Tests the local and public connection, raising a `SettingsException` on error
   /// and returning a `String` on a warning
@@ -22,11 +24,15 @@ abstract class NasConnectionInterface {
 abstract class NasFileInterface {
   Future<bool> initialiseRootDir();
 
-  Future<bool> dirExists(String dir);
+  Future<bool> dirExistsRelative(String dir);
 
   /// Creates the specified directory and all missing parent directories
-  Future<bool> createAllDirs(String dir);
+  Future<bool> createAllDirsAbsolute(String dir);
 
   /// Returns a list of folders in the specified directory
-  Future<List<String>?> listFoldersInDir(String dir);
+  Future<List<String>?> listFoldersInDirRelative(String dir);
+  
+  Future<Stream<Uint8List>?> getFileRelative(String path);
+
+  Future<bool> writeFileRelative(String path, Uint8List contents);
 }

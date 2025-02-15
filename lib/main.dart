@@ -11,12 +11,12 @@ import 'package:pheco/ui/pages/welcome_page.dart';
 
 const platformChannel = MethodChannel('com.example.pheco/channel');
 
-late SettingsStore settingsStore;
+late final SettingsStore settingsStore;
 
-late NasClient nasClient;
+late final NasClient nasClient;
 
-late LocalGallery localGallery;
-late ServerGallery serverGallery;
+late final LocalGallery localGallery;
+late final ServerGallery serverGallery;
 
 AndroidOptions _getAndroidOptions() {
   return const AndroidOptions(encryptedSharedPreferences: true);

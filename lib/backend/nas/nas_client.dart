@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:ffi';
+
 import 'package:pheco/backend/nas/nas_interface.dart';
 import 'package:pheco/backend/utils.dart';
 import 'package:pheco/main.dart';
@@ -16,6 +19,9 @@ class NasClient {
       _retryConnection();
     });
   }
+
+  Set<int> _existingFiles = {};
+  Set<int> existingFiles() => Set.unmodifiable(_existingFiles);
 
   String _noConnectionReason = "";
   String noConnectionReason() => _noConnectionReason;
@@ -81,9 +87,48 @@ class NasClient {
     }
   }
 
+  Future<void> refreshExistingFiles() async {
+    _existingFiles = {};
+    if (!isConnected()) { return; }
+
+    final file = await _connection!.getFileInterface().getFileRelative(".file-hashes");
+    if (file == null) {
+      return;
+    }
+
+    final fileIterator = StreamIterator(file);
+
+    final tExistingFiles = <int>{};
+
+    while (true) {
+      int hash = 0;
+
+      final isMore = await fileIterator.moveNext();
+      if (!isMore) {
+        break;
+      }
+
+      hash = fileIterator.current as int;
+      for (int i = 0; i < 64; i += 8) {
+        await fileIterator.moveNext();
+        hash |= ((fileIterator.current as int) << i);
+      }
+
+      tExistingFiles.add(hash);
+    }
+
+    _existingFiles = tExistingFiles;
+  }
+  
+  Future<void> addFileToHashes() {
+    // TODO
+    throw UnimplementedError;
+  }
+
   Future<void> update() async {
     _connection?.disconnect();
     _connection = null;
+    _existingFiles = {};
 
     if (!settingsStore.validData()) {
       _noConnectionReason = setUpConnectionInSettings;
@@ -121,6 +166,7 @@ class NasClient {
       _noConnectionReason = "";
     }
 
+    await refreshExistingFiles();
     _updateListeners();
   }
 }

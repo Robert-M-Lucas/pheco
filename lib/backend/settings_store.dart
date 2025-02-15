@@ -32,7 +32,7 @@ const String welcomeVersionKey = "welcomeVersion";
 class SettingsStore {
   final List<Function()> listeners = [];
 
-  late SharedPreferences _sp;
+  late final SharedPreferences _sp;
 
   bool _validData = false;
   bool validData() => _validData;
@@ -60,7 +60,7 @@ class SettingsStore {
   bool? _folderMode;
   bool folderMode() => _folderMode ?? false;
   List<String> _folders = [];
-  List<String> folders() => List<String>.from(_folders);
+  List<String> folders() => List.unmodifiable(_folders);
 
   int? _welcomeVersion;
 
