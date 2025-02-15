@@ -31,8 +31,9 @@ abstract class NasFileInterface {
 
   /// Returns a list of folders in the specified directory
   Future<List<String>?> listFoldersInDirRelative(String dir);
-  
+
   Future<Stream<Uint8List>?> getFileRelative(String path);
 
   Future<bool> writeFileRelative(String path, Uint8List contents);
+  Future<bool> appendFileRelative(String path, Uint8List contents);
 }

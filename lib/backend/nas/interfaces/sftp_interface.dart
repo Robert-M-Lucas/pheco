@@ -8,8 +8,8 @@ import 'package:pheco/backend/utils.dart';
 import '../nas_utils.dart';
 
 class SftpInterface implements NasConnectionInterface, NasFileInterface {
-  SftpInterface(this._localIp, this._publicIp, serverFolder,
-      this._username, this._password) {
+  SftpInterface(this._localIp, this._publicIp, serverFolder, this._username,
+      this._password) {
     if (!serverFolder.endsWith('/')) {
       serverFolder += '/';
     }
@@ -272,8 +272,25 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
     final file = await client.open(_serverFolder + path);
     try {
       await file.writeBytes(contents);
+    } on Exception catch (e) {
+      print(e);
+      return false;
     }
-    on Exception catch(e) {
+    return true;
+  }
+
+  @override
+  Future<bool> appendFileRelative(String path, Uint8List contents) async {
+    final client = _getClient();
+    if (client == null) {
+      return false;
+    }
+
+    final file = await client.open(_serverFolder + path);
+    try {
+      final size = (await file.stat()).size!;
+      await file.writeBytes(contents, offset: size);
+    } on Exception catch (e) {
       print(e);
       return false;
     }

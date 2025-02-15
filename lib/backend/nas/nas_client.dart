@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:ffi';
+import 'dart:typed_data';
 
 import 'package:pheco/backend/nas/nas_interface.dart';
 import 'package:pheco/backend/utils.dart';
@@ -7,6 +7,8 @@ import 'package:pheco/main.dart';
 import 'package:tuple/tuple.dart';
 
 import 'nas_utils.dart';
+
+const hashFile = ".file-hashes";
 
 const int connectionRetryMs = 10000;
 const String connectionToServerFailed = "Connection to server failed";
@@ -89,40 +91,39 @@ class NasClient {
 
   Future<void> refreshExistingFiles() async {
     _existingFiles = {};
-    if (!isConnected()) { return; }
+    if (!isConnected()) {
+      return;
+    }
 
-    final file = await _connection!.getFileInterface().getFileRelative(".file-hashes");
+    final file =
+        await _connection!.getFileInterface().getFileRelative(hashFile);
     if (file == null) {
       return;
     }
 
-    final fileIterator = StreamIterator(file);
-
     final tExistingFiles = <int>{};
 
-    while (true) {
-      int hash = 0;
+    file.listen((Uint8List data) {
+      // Create a ByteData view of the Uint8List
+      ByteData byteData = ByteData.sublistView(data);
 
-      final isMore = await fileIterator.moveNext();
-      if (!isMore) {
-        break;
+      for (int i = 0; i < byteData.lengthInBytes; i += 8) {
+        int value = byteData.getInt64(i, Endian.big);
+        tExistingFiles.add(value);
       }
-
-      hash = fileIterator.current as int;
-      for (int i = 0; i < 64; i += 8) {
-        await fileIterator.moveNext();
-        hash |= ((fileIterator.current as int) << i);
-      }
-
-      tExistingFiles.add(hash);
-    }
+    });
 
     _existingFiles = tExistingFiles;
   }
-  
-  Future<void> addFileToHashes() {
-    // TODO
-    throw UnimplementedError;
+
+  Future<bool> addFileToHashes(String path) async {
+    if (!isConnected()) {
+      return false;
+    }
+    final bytes = ByteData(8)..setInt64(0, path.hashCode, Endian.big);
+    return await _connection!
+        .getFileInterface()
+        .appendFileRelative(hashFile, bytes.buffer.asUint8List());
   }
 
   Future<void> update() async {
