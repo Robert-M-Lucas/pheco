@@ -30,7 +30,8 @@ Widget galleryContent(BuildContext context, List<String>? imageUris,
                   ]
                 : <Widget>[
                     Expanded(
-                        child: CustomScrollView(
+                        child: Scrollbar(
+                            child: CustomScrollView(
                       primary: false,
                       slivers: <Widget>[
                         SliverPadding(
@@ -60,7 +61,7 @@ Widget galleryContent(BuildContext context, List<String>? imageUris,
                               }).toList()),
                         ),
                       ],
-                    ))
+                    )))
                   ]),
   );
 }
