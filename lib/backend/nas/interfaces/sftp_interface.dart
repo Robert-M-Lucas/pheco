@@ -49,11 +49,8 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
 
     print("Testing authentication / SFTP");
 
-    final bool initialised;
-    try {
-      initialised = await initialiseRootDir();
-    } catch (e) {
-      print(e);
+    final bool? initialised = await futureNullError(initialiseRootDir());
+    if (initialised == null) {
       throw SettingsException(
           "Failed to authenticate with SFTP server. Check username and password.");
     }
@@ -97,26 +94,18 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
     print("Connecting clients");
 
     Future<SftpClient?> getLocalClient() async {
-      try {
-        final sshClient = await _getSSHClient(_localIp);
-        return await sshClient.sftp();
-      } on Exception catch (e) {
-        print(e);
-      }
-      return null;
+      final sshClient = await futureNullError(_getSSHClient(_localIp));
+      if (sshClient == null) return null;
+      return await futureNullError(sshClient.sftp());
     }
 
     Future<SftpClient?> getPublicClient() async {
       if (_publicIp == null) {
         return null;
       }
-      try {
-        final sshClient = await _getSSHClient(_publicIp);
-        return await sshClient.sftp();
-      } on Exception catch (e) {
-        print(e);
-      }
-      return null;
+      final sshClient = await futureNullError(_getSSHClient(_publicIp));
+      if (sshClient == null) return null;
+      return await sshClient.sftp();
     }
 
     final clients = await Future.wait<SftpClient?>(
@@ -184,13 +173,9 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
     }
     final SftpClient client = clientN;
 
-    final List<SftpName> dirList;
-    try {
-      dirList = await client.listdir(_serverFolder + dir);
-    } on Exception catch (e) {
-      print(e);
-      return null;
-    }
+    final List<SftpName>? dirList =
+        await futureNullError(client.listdir(_serverFolder + dir));
+    if (dirList == null) return null;
 
     return dirList
         .where((e) => e.attr.isDirectory)
@@ -258,8 +243,9 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
       return null;
     }
 
-    final file = await client.open(_serverFolder + path);
-    return file.read();
+    final SftpFile? file =
+        await futureNullError(client.open(_serverFolder + path));
+    return file?.read();
   }
 
   @override

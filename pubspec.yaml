@@ -48,8 +48,8 @@ dependencies:
   flutter_secure_storage: ^9.2.4
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
+#  flutter_test:
+#    sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -58,7 +58,8 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
 
-  flutter_launcher_icons: "^0.14.3"
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.4
 
 flutter_launcher_icons:
   android: "launcher_icon"
@@ -79,6 +80,12 @@ flutter_launcher_icons:
   macos:
     generate: true
     image_path: "assets/icon/icon.png"
+
+flutter_native_splash:
+  color: "#EDBB99"
+  image: assets/icon/icon.png
+  android: true
+  ios: true
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

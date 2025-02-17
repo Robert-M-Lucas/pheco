@@ -14,3 +14,11 @@ class ValidIp {
     return "$ip:$port";
   }
 }
+
+Future<T?> futureNullError<T>(Future<T> f) async {
+  try {
+    return await f.then((v) => v as T?).onError((_, __) => null);
+  } on Exception {
+    return null;
+  }
+}
