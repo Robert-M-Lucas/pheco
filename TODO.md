@@ -1,0 +1,2 @@
+- Ensure hash file isn't being written to from multiple places at once
+- Upload files during compression

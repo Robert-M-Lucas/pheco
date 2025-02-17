@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:lorem_ipsum/lorem_ipsum.dart';
 import 'package:pheco/main.dart';
-
-const int welcomeInfoVersion = 6;
+import 'package:pheco/ui/shared/info_content.dart';
 
 bool shouldShowWelcomePage() {
-  return settingsStore.welcomeVersion() != welcomeInfoVersion;
+  return settingsStore.welcomeVersion() != infoVersion;
 }
 
 class WelcomePage extends StatefulWidget {
@@ -34,22 +32,9 @@ class _WelcomePageState extends State<WelcomePage> {
           padding: const EdgeInsets.all(8.0),
           width: double.infinity,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Overview',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              Text(loremIpsum(paragraphs: 3)),
-              const Padding(padding: EdgeInsets.all(7.0)),
-              Text(
-                'Compression',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              Text(loremIpsum(paragraphs: 2)),
-            ],
-          )),
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: infoContent(context))),
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         child: Padding(
@@ -65,7 +50,7 @@ class _WelcomePageState extends State<WelcomePage> {
               ),
               TextButton(
                 onPressed: () async {
-                  await settingsStore.setWelcomeVersion(welcomeInfoVersion);
+                  await settingsStore.setWelcomeVersion(infoVersion);
                   goToMainPage();
                 },
                 child: const Text("Don't show again"),

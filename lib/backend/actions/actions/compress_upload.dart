@@ -7,8 +7,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:pheco/backend/actions/action_interface.dart';
 import 'package:pheco/main.dart';
 
-class CompressAndUploadAction implements ActionInterface {
-  const CompressAndUploadAction();
+class CompressUploadAction implements ActionInterface {
+  const CompressUploadAction();
 
   @override
   Icon getIcon() => const Icon(Icons.compress);
@@ -60,7 +60,7 @@ class CompressAndUploadAction implements ActionInterface {
 
     for (var i in nonPheco) {
       if (compressed != 0 && compressed % interval == 0) {
-        printer("Compressed ${step * 10}%");
+        printer("Compressed/Uploaded ${step * 10}%");
         step += 1;
       }
       compressed += 1;
@@ -85,6 +85,14 @@ class CompressAndUploadAction implements ActionInterface {
         continue;
       }
       await platformChannel.invokeMethod('rescanMedia', {'path': newName});
+
+      final uploadResult = await nasClient.sendFileToServer(
+          await file.readAsBytes(), file.absolute.path);
+      if (!uploadResult) {
+        printer("Failed to upload '$i'");
+      } else {
+        await file.delete();
+      }
     }
   }
 

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:pheco/main.dart';
+
+import '../shared/info_content.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -16,9 +19,14 @@ class _AboutPageState extends State<AboutPage> {
           title: const Text("App Info", style: TextStyle(color: Colors.white)),
           iconTheme: const IconThemeData(color: Colors.white),
         ),
-        body: const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Text("App info will go here!"),
-        ));
+        body: Scrollbar(
+            child: ListView(
+                padding: const EdgeInsets.all(8.0),
+                children: <Widget>[
+                      Text(
+                          "Version: v${packageInfo.version}/${packageInfo.buildNumber}"),
+                      const Divider(),
+                    ] +
+                    infoContent(context))));
   }
 }

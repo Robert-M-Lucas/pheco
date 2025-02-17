@@ -22,7 +22,7 @@ Future<T?> futureNullError<T>(Future<T> f) async {
       print(st);
       return null;
     });
-  } on Exception catch(e){
+  } on Exception catch (e) {
     print("FNE: $e");
     print(StackTrace.current);
     return null;

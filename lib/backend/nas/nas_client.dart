@@ -126,6 +126,18 @@ class NasClient {
         .appendFileRelative(hashFile, bytes.buffer.asUint8List());
   }
 
+  Future<bool> sendFileToServer(Uint8List file, String path) async {
+    if (!isConnected()) return false;
+    final writeResult =
+        await _connection!.getFileInterface().writeFileRelative(path, file);
+    if (!writeResult) return false;
+    final hashResult = await addFileToHashes(path);
+    if (!hashResult) {
+      print("Failed to add '$path' to hash when write succeeded");
+    }
+    return true;
+  }
+
   Future<void> update() async {
     _connection?.disconnect();
     _connection = null;

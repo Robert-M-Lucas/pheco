@@ -444,7 +444,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ListTile(
           leading: const Icon(Icons.info),
           title: const Text('About'),
-          subtitle: const Text('App version and details'),
+          subtitle: const Text('Help, app version, and details'),
           onTap: () {
             Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const AboutPage()));
