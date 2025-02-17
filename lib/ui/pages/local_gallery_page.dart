@@ -15,6 +15,7 @@ class LocalGalleryPage extends StatefulWidget {
 
 class _LocalGalleryPageState extends State<LocalGalleryPage> {
   String? _selectedFolder;
+  bool _firstLoad = true;
 
   @override
   void initState() {
@@ -29,6 +30,18 @@ class _LocalGalleryPageState extends State<LocalGalleryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final folderList = localGallery.getFolderList();
+    if (_firstLoad && folderList != null) {
+      if (folderList.isNotEmpty) {
+        setState(() {
+          _selectedFolder = folderList[0];
+        });
+      }
+      setState(() {
+        _firstLoad = false;
+      });
+    }
+
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.primary,

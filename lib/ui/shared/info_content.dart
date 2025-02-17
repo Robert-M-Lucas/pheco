@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pheco/main.dart';
 
-const int infoVersion = 7;
+const int infoVersion = 8;
 
 List<Widget> infoContent(BuildContext context) {
   return [

@@ -28,12 +28,9 @@ class _WelcomePageState extends State<WelcomePage> {
             const Text("Welcome Page", style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Container(
-          padding: const EdgeInsets.all(8.0),
-          width: double.infinity,
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: Scrollbar(
+          child: ListView(
+              padding: const EdgeInsets.all(8.0),
               children: infoContent(context))),
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),

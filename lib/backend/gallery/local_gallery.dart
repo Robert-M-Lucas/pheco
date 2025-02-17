@@ -1,29 +1,28 @@
 import 'dart:io';
 
-import 'package:flutter/services.dart';
 import 'package:pheco/backend/gallery/gallery_interface.dart';
+import 'package:pheco/main.dart';
 
 class LocalGallery extends GalleryInterface {
-  List<String>? images;
-  List<String>? folders;
-  List<String>? activeImages;
-  bool updating = false;
-  static const MethodChannel platform =
-      MethodChannel('com.example.pheco/channel');
+  List<String>? _images;
+  List<String>? _folders;
+  List<String>? _activeImages;
+  bool _updating = false;
 
   @override
   Future<void> initialiseIfUninitialised() async {
-    if ((images == null || folders == null) && !updating) {
+    if ((_images == null || _folders == null) && !_updating) {
       update();
     }
   }
 
   @override
   Future<void> update() async {
-    updating = true;
+    _updating = true;
 
     final List<String> tImages =
-        (await platform.invokeMethod('getImages') as List<Object?>).map((e) {
+        (await platformChannel.invokeMethod('getImages') as List<Object?>)
+            .map((e) {
       return e as String;
     }).toList();
 
@@ -33,25 +32,25 @@ class LocalGallery extends GalleryInterface {
       folderPaths.add(File(p).parent.path);
     }
 
-    images = tImages;
-    folders = folderPaths.toList();
+    _images = tImages;
+    _folders = folderPaths.toList();
     super.updateDependencies();
-    updating = false;
+    _updating = false;
   }
 
   @override
   List<String>? getFilesInFolder(String? folder) {
     if (folder == null) {
-      return images;
+      return _images;
     }
 
-    return images?.where((p) {
+    return _images?.where((p) {
       return File(p).parent.path == folder;
     }).toList();
   }
 
   @override
   List<String>? getFolderList() {
-    return folders;
+    return _folders;
   }
 }
