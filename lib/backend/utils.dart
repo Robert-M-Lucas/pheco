@@ -17,8 +17,14 @@ class ValidIp {
 
 Future<T?> futureNullError<T>(Future<T> f) async {
   try {
-    return await f.then((v) => v as T?).onError((_, __) => null);
-  } on Exception {
+    return await f.then((v) => v as T?).onError((e, st) {
+      print("FNE: $e");
+      print(st);
+      return null;
+    });
+  } on Exception catch(e){
+    print("FNE: $e");
+    print(StackTrace.current);
     return null;
   }
 }
