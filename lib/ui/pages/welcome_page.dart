@@ -24,14 +24,18 @@ class _WelcomePageState extends State<WelcomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
-        title:
-            const Text("Welcome Page", style: TextStyle(color: Colors.white)),
+        title: const Text("Welcome", style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Scrollbar(
           child: ListView(
               padding: const EdgeInsets.all(8.0),
-              children: infoContent(context))),
+              children: <Widget>[
+                    const Text(
+                        "You can also find this information in Settings > About"),
+                    const Divider()
+                  ] +
+                  infoContent(context))),
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         child: Padding(
