@@ -272,7 +272,7 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
       return false;
     }
 
-    final file = await client.open(_serverFolder + path);
+    final file = await client.open(_serverFolder + path, mode: SftpFileOpenMode.append);
     try {
       final size = (await file.stat()).size!;
       await file.writeBytes(contents, offset: size);
