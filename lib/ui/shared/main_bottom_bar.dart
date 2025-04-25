@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pheco/ui/pages/local_gallery_page.dart';
 import 'package:pheco/ui/pages/action_page.dart';
-import 'package:pheco/ui/pages/server_gallery_page.dart';
 import 'package:pheco/ui/shared/gallery_content.dart';
 
 class MainBottomBar extends StatefulWidget {
@@ -20,7 +19,8 @@ class _MainBottomBarState extends State<MainBottomBar> {
       pageBuilder: (context, animation, secondaryAnimation) =>
           other == GalleryType.local
               ? const LocalGalleryPage()
-              : const ServerGalleryPage(),
+              // : const ServerGalleryPage()
+              : throw Exception(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         final tween = Tween(begin: 0.0, end: 1.0);
         final opacityAnimation = animation.drive(tween);
@@ -52,21 +52,21 @@ class _MainBottomBarState extends State<MainBottomBar> {
               ),
             ),
           ),
-          Expanded(
-            child: SizedBox.expand(
-              child: IconButton(
-                isSelected: widget.type == GalleryType.serverOnly,
-                icon: const Icon(Icons.storage, size: 30),
-                onPressed: widget.enabled
-                    ? () {
-                        if (widget.type != GalleryType.serverOnly) {
-                          navigateToOther(GalleryType.serverOnly);
-                        }
-                      }
-                    : null,
-              ),
-            ),
-          ),
+          // Expanded(
+          //   child: SizedBox.expand(
+          //     child: IconButton(
+          //       isSelected: widget.type == GalleryType.serverOnly,
+          //       icon: const Icon(Icons.storage, size: 30),
+          //       onPressed: widget.enabled
+          //           ? () {
+          //               if (widget.type != GalleryType.serverOnly) {
+          //                 navigateToOther(GalleryType.serverOnly);
+          //               }
+          //             }
+          //           : null,
+          //     ),
+          //   ),
+          // ),
           Expanded(
             child: SizedBox.expand(
               child: IconButton(

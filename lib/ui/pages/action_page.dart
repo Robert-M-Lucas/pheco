@@ -47,12 +47,12 @@ class _ActionPageState extends State<ActionPage> {
     });
     localGallery.initialiseIfUninitialised();
 
-    serverGallery.registerUpdateCallback(() {
-      setState(() {});
-    }, () {
-      return mounted;
-    });
-    serverGallery.initialiseIfUninitialised();
+    // serverGallery.registerUpdateCallback(() {
+    //   setState(() {});
+    // }, () {
+    //   return mounted;
+    // });
+    // serverGallery.initialiseIfUninitialised();
 
     super.initState();
   }
@@ -127,10 +127,11 @@ class _ActionPageState extends State<ActionPage> {
                                 Padding(
                                     padding: EdgeInsets.only(
                                         bottom:
-                                            serverGallery.connectionError() ==
-                                                    null
-                                                ? 8.0
-                                                : 0.00),
+                                            // serverGallery.connectionError() ==
+                                            //         null
+                                            //     ? 8.0
+                                            //     : 0.00),
+                                            8.0),
                                     child: const Center(
                                       child: Text("Settings aren't configured",
                                           style: TextStyle(

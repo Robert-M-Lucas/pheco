@@ -3,7 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:pheco/backend/utils.dart';
 
-enum GalleryType { local, serverOnly }
+enum GalleryType {
+  local,
+  // serverOnly
+}
 
 Widget galleryContent(BuildContext context, List<String>? imageUris,
     String? selectedFolder, GalleryType galleryType) {

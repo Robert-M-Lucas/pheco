@@ -4,7 +4,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pheco/backend/gallery/local_gallery.dart';
-import 'package:pheco/backend/gallery/server_gallery.dart';
 import 'package:pheco/backend/nas/nas_client.dart';
 import 'package:pheco/backend/settings_store.dart';
 import 'package:pheco/ui/pages/local_gallery_page.dart';
@@ -19,7 +18,7 @@ late final SettingsStore settingsStore;
 late final NasClient nasClient;
 
 late final LocalGallery localGallery;
-late final ServerGallery serverGallery;
+// late final ServerGallery serverGallery;
 
 AndroidOptions _getAndroidOptions() {
   return const AndroidOptions(encryptedSharedPreferences: true);
@@ -37,12 +36,12 @@ void main() async {
   settingsStore = SettingsStore();
 
   localGallery = LocalGallery();
-  serverGallery = ServerGallery();
+  // serverGallery = ServerGallery();
   nasClient = NasClient();
 
   settingsStore.addUpdateListener(localGallery.update);
   settingsStore.addUpdateListener(nasClient.update);
-  nasClient.addUpdateListener(serverGallery.update);
+  // nasClient.addUpdateListener(serverGallery.update);
 
   await settingsStore.initialise();
 

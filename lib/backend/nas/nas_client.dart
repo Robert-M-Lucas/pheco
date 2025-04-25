@@ -23,10 +23,10 @@ class NasClient {
     });
   }
 
-  Set<int> _existingFiles = {};
-  Set<int> existingFiles() => Set.unmodifiable(_existingFiles);
-
-  final AsyncLock _serverHashFileLock = AsyncLock();
+  // Set<int> _existingFiles = {};
+  // Set<int> existingFiles() => Set.unmodifiable(_existingFiles);
+  //
+  // final AsyncLock _serverHashFileLock = AsyncLock();
 
   String _noConnectionReason = "";
   String noConnectionReason() => _noConnectionReason;
@@ -93,60 +93,60 @@ class NasClient {
     }
   }
 
-  Future<void> rehashServerFile() async {
-    await _serverHashFileLock.getLock();
-    try {
-      _connection!
-          .getFileInterface()
-          .writeFileRelative(hashFile, Uint8List(0), true);
-    } finally {
-      _serverHashFileLock.releaseLock();
-    }
-  }
+  // Future<void> rehashServerFile() async {
+  //   await _serverHashFileLock.getLock();
+  //   try {
+  //     _connection!
+  //         .getFileInterface()
+  //         .writeFileRelative(hashFile, Uint8List(0), true);
+  //   } finally {
+  //     _serverHashFileLock.releaseLock();
+  //   }
+  // }
 
-  Future<bool> refreshExistingFiles() async {
-    _existingFiles = {};
-    if (!isConnected()) {
-      return false;
-    }
+  // Future<bool> refreshExistingFiles() async {
+  //   _existingFiles = {};
+  //   if (!isConnected()) {
+  //     return false;
+  //   }
+  //
+  //   var file = await _connection!.getFileInterface().getFileRelative(hashFile);
+  //   if (file == null) {
+  //     await rehashServerFile();
+  //     file = await _connection!.getFileInterface().getFileRelative(hashFile);
+  //     if (file == null) {
+  //       return false;
+  //     }
+  //   }
+  //
+  //   final tExistingFiles = <int>{};
+  //
+  //   file.listen((Uint8List data) {
+  //     // Create a ByteData view of the Uint8List
+  //     ByteData byteData = ByteData.sublistView(data);
+  //
+  //     for (int i = 0; i < byteData.lengthInBytes; i += 8) {
+  //       int value = byteData.getInt64(i, Endian.little);
+  //       tExistingFiles.add(value);
+  //     }
+  //   });
+  //
+  //   _existingFiles = tExistingFiles;
+  //   return true;
+  // }
 
-    var file = await _connection!.getFileInterface().getFileRelative(hashFile);
-    if (file == null) {
-      await rehashServerFile();
-      file = await _connection!.getFileInterface().getFileRelative(hashFile);
-      if (file == null) {
-        return false;
-      }
-    }
-
-    final tExistingFiles = <int>{};
-
-    file.listen((Uint8List data) {
-      // Create a ByteData view of the Uint8List
-      ByteData byteData = ByteData.sublistView(data);
-
-      for (int i = 0; i < byteData.lengthInBytes; i += 8) {
-        int value = byteData.getInt64(i, Endian.little);
-        tExistingFiles.add(value);
-      }
-    });
-
-    _existingFiles = tExistingFiles;
-    return true;
-  }
-
-  Future<bool> addFileToHashes(List<String> paths) async {
-    if (!isConnected()) {
-      return false;
-    }
-    final bytes = ByteData(8 * paths.length);
-    paths.asMap().forEach((i, path) {
-      bytes.setInt64(i * 8, path.hashCode, Endian.little);
-    });
-    return await _connection!
-        .getFileInterface()
-        .appendFileRelative(hashFile, bytes.buffer.asUint8List());
-  }
+  // Future<bool> addFileToHashes(List<String> paths) async {
+  //   if (!isConnected()) {
+  //     return false;
+  //   }
+  //   final bytes = ByteData(8 * paths.length);
+  //   paths.asMap().forEach((i, path) {
+  //     bytes.setInt64(i * 8, path.hashCode, Endian.little);
+  //   });
+  //   return await _connection!
+  //       .getFileInterface()
+  //       .appendFileRelative(hashFile, bytes.buffer.asUint8List());
+  // }
 
   Future<bool> sendImageToServer(Uint8List file, String path) async {
     if (!isConnected()) return false;
@@ -161,18 +161,18 @@ class NasClient {
         .getFileInterface()
         .writeFileRelative(removePreSlash(path), file, true);
     if (!writeResult) return false;
-    final hashResult = await addFileToHashes([path]);
-    if (!hashResult) {
-      print("Failed to add '$path' to hash when write succeeded");
-      return false;
-    }
+    // final hashResult = await addFileToHashes([path]);
+    // if (!hashResult) {
+    //   print("Failed to add '$path' to hash when write succeeded");
+    //   return false;
+    // }
     return true;
   }
 
   Future<void> update() async {
     _connection?.disconnect();
     _connection = null;
-    _existingFiles = {};
+    // _existingFiles = {};
 
     if (!settingsStore.validData()) {
       _noConnectionReason = setUpConnectionInSettings;
@@ -210,10 +210,10 @@ class NasClient {
       _noConnectionReason = "";
     }
 
-    final fileRefreshSuccess = await refreshExistingFiles();
-    if (!fileRefreshSuccess) {
-      print("File refresh failed");
-    }
+    // final fileRefreshSuccess = await refreshExistingFiles();
+    // if (!fileRefreshSuccess) {
+    //   print("File refresh failed");
+    // }
 
     _updateListeners();
   }
