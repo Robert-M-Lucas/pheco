@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pheco/backend/actions/action_interface.dart';
 import 'package:pheco/backend/native.dart';
-import 'package:pheco/main.dart';
 
 class RescanMediaStoreAction implements ActionInterface {
   const RescanMediaStoreAction();

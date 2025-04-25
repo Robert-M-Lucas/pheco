@@ -181,8 +181,7 @@ class _ActionPageState extends State<ActionPage> {
                               });
                             },
                           ) as Widget;
-                        }).toList()
-                    ))),
+                        }).toList()))),
         Container(
           width: double.infinity,
           color: Colors.black,

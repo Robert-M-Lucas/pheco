@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/foundation.dart';
 
 abstract class NasConnectionInterface {
@@ -34,7 +32,8 @@ abstract class NasFileInterface {
     if (kDebugMode && relativeDir.startsWith("/")) {
       throw Exception("Expected relative dir");
     }
-    if (kDebugMode && (!rootDirPath().startsWith("/") || !rootDirPath().endsWith("/"))) {
+    if (kDebugMode &&
+        (!rootDirPath().startsWith("/") || !rootDirPath().endsWith("/"))) {
       throw Exception("Malformed rootDirPath");
     }
     return dirExistsAbsolute(rootDirPath() + relativeDir);
@@ -47,7 +46,8 @@ abstract class NasFileInterface {
     if (kDebugMode && relativeDir.startsWith("/")) {
       throw Exception("Expected relative dir");
     }
-    if (kDebugMode && (!rootDirPath().startsWith("/") || !rootDirPath().endsWith("/"))) {
+    if (kDebugMode &&
+        (!rootDirPath().startsWith("/") || !rootDirPath().endsWith("/"))) {
       throw Exception("Malformed rootDirPath");
     }
     return createAllDirsAbsolute(rootDirPath() + relativeDir);
@@ -60,11 +60,13 @@ abstract class NasFileInterface {
 
   Future<bool> writeFileAbsolute(String path, Uint8List contents, bool create);
 
-  Future<bool> writeFileRelative(String relativePath, Uint8List contents, bool create) {
+  Future<bool> writeFileRelative(
+      String relativePath, Uint8List contents, bool create) {
     if (kDebugMode && relativePath.startsWith("/")) {
       throw Exception("Expected relative dir");
     }
-    if (kDebugMode && (!rootDirPath().startsWith("/") || !rootDirPath().endsWith("/"))) {
+    if (kDebugMode &&
+        (!rootDirPath().startsWith("/") || !rootDirPath().endsWith("/"))) {
       throw Exception("Malformed rootDirPath");
     }
     return writeFileAbsolute(rootDirPath() + relativePath, contents, create);
@@ -76,7 +78,8 @@ abstract class NasFileInterface {
     if (kDebugMode && relativePath.startsWith("/")) {
       throw Exception("Expected relative dir");
     }
-    if (kDebugMode && (!rootDirPath().startsWith("/") || !rootDirPath().endsWith("/"))) {
+    if (kDebugMode &&
+        (!rootDirPath().startsWith("/") || !rootDirPath().endsWith("/"))) {
       throw Exception("Malformed rootDirPath");
     }
     return appendFileAbsolute(rootDirPath() + relativePath, contents);

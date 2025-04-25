@@ -98,11 +98,19 @@ class _ServerGalleryPageState extends State<ServerGalleryPage> {
                 GalleryType.serverOnly)
             : _noConnectionScreen(context),
         floatingActionButton: refreshButton(_reloading, () async {
-          if (!mounted) { return; }
-          setState(() { _reloading = true; });
+          if (!mounted) {
+            return;
+          }
+          setState(() {
+            _reloading = true;
+          });
           await serverGallery.update();
-          if (!mounted) { return; }
-          setState(() { _reloading = false; });
+          if (!mounted) {
+            return;
+          }
+          setState(() {
+            _reloading = false;
+          });
         }),
         bottomNavigationBar: const MainBottomBar(
           type: GalleryType.serverOnly,

@@ -204,26 +204,28 @@ class _SettingsPageState extends State<SettingsPage> {
                 color: Color.fromARGB(255, 100, 100, 100)),
           )),
         ),
-        if (kDebugMode) Padding(
-          padding: const EdgeInsets.all(1.0),
-          child: Center(
-              child: TextButton(
-                onPressed: () {
-                  _configureForEmulator();
-                },
-                child: const Text("Configure for emulator"),
+        if (kDebugMode)
+          Padding(
+              padding: const EdgeInsets.all(1.0),
+              child: Center(
+                child: TextButton(
+                  onPressed: () {
+                    _configureForEmulator();
+                  },
+                  child: const Text("Configure for emulator"),
                 ),
-        )),
-        if (kDebugMode) Padding(
-            padding: const EdgeInsets.all(1.0),
-            child: Center(
-              child: TextButton(
-                onPressed: () {
-                  nasClient.update();
-                },
-                child: const Text("Force reconnect"),
-              ),
-            )),
+              )),
+        if (kDebugMode)
+          Padding(
+              padding: const EdgeInsets.all(1.0),
+              child: Center(
+                child: TextButton(
+                  onPressed: () {
+                    nasClient.update();
+                  },
+                  child: const Text("Force reconnect"),
+                ),
+              )),
         ListTile(
           title: const Text('Select Protocol'),
           subtitle: DropdownButton<String>(

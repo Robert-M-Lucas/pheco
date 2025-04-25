@@ -255,16 +255,21 @@ class SftpInterface extends NasFileInterface implements NasConnectionInterface {
   }
 
   @override
-  Future<bool> writeFileAbsolute(String path, Uint8List contents, bool create) async {
+  Future<bool> writeFileAbsolute(
+      String path, Uint8List contents, bool create) async {
     final client = _getClient();
     if (client == null) {
       return false;
     }
 
     try {
-      final file = await client.open(path, mode: create ? SftpFileOpenMode.create | SftpFileOpenMode.write : SftpFileOpenMode.write)
+      final file = await client
+          .open(path,
+              mode: create
+                  ? SftpFileOpenMode.create | SftpFileOpenMode.write
+                  : SftpFileOpenMode.write)
           .onError((e, st) {
-            throw Exception("1 $e");
+        throw Exception("1 $e");
       });
       await file.writeBytes(contents).onError((e, st) {
         throw Exception("2 $e");
@@ -284,9 +289,12 @@ class SftpInterface extends NasFileInterface implements NasConnectionInterface {
     }
 
     try {
-      final file = await client.open(path).onError((e, st) {
+      final file = await client
+          .open(path, mode: SftpFileOpenMode.write)
+          .onError((e, st) {
         throw Exception("1 $e");
       });
+
       final size = (await file.stat()).size!;
       await file.writeBytes(contents, offset: size).onError((e, st) {
         throw Exception("2 $e");

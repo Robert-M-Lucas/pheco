@@ -50,6 +50,7 @@ void main() async {
 
   List<Permission> permissions = [
     Permission.storage,
+    Permission.manageExternalStorage
   ];
   await permissions.request();
 

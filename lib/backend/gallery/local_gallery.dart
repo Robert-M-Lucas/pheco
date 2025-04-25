@@ -1,10 +1,8 @@
 import 'dart:io';
 
-import 'package:pheco/backend/constants.dart';
 import 'package:pheco/backend/gallery/gallery_interface.dart';
 import 'package:pheco/backend/utils.dart';
 import 'package:pheco/main.dart';
-import 'package:path/path.dart' as p;
 
 class LocalGallery extends GalleryInterface {
   List<String>? _images;
@@ -26,8 +24,10 @@ class LocalGallery extends GalleryInterface {
     final List<String> tImages =
         (await platformChannel.invokeMethod('getImages') as List<Object?>)
             .map((e) {
-      return e as String;
-    }).where((e) => isSupportedFileExt(e)).toList();
+              return e as String;
+            })
+            .where((e) => isSupportedFileExt(e))
+            .toList();
 
     Set<String> folderPaths = {};
 

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import 'constants.dart';
@@ -28,7 +27,7 @@ Future<T?> futureNullError<T>(Future<T> f) async {
       // print(st);
       return null;
     });
-  } on Exception catch (e) {
+  } on Exception {
     // print("FNE: $e");
     // print(StackTrace.current);
     return null;
@@ -38,7 +37,9 @@ Future<T?> futureNullError<T>(Future<T> f) async {
 bool isPhecoFile(String fileNameOrPath) {
   final fileName = p.basename(fileNameOrPath);
   final sections = fileName.split(".");
-  if (sections.length < 3) { return false; }
+  if (sections.length < 3) {
+    return false;
+  }
   return sections[sections.length - 2] == "pheco";
 }
 
@@ -49,8 +50,10 @@ String addPhecoExtensionToFile(String fileNameOrPath) {
 }
 
 bool isSupportedFileExt(String fileNameOrPath) {
-  return supportedFileExtensions.contains(p.extension(fileNameOrPath).toLowerCase());
+  return supportedFileExtensions
+      .contains(p.extension(fileNameOrPath).toLowerCase());
 }
+
 class AsyncLock {
   bool _lock = false;
 

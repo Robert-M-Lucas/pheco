@@ -66,8 +66,6 @@ class CompressUploadAction implements ActionInterface {
       }
       compressed += 1;
 
-
-
       File file = File(i);
 
       final uploadResult = await nasClient.sendImageToServer(
@@ -94,9 +92,10 @@ class CompressUploadAction implements ActionInterface {
         continue;
       }
 
-      await rescanMedia(path: newName);
-
       await file.delete();
+
+      await rescanMedia(path: i);
+      await rescanMedia(path: newName);
     }
   }
 

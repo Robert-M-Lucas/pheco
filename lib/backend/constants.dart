@@ -1,5 +1,1 @@
-const supportedFileExtensions = [
-  ".jpg",
-  ".jpeg",
-  ".png"
-];
+const supportedFileExtensions = [".jpg", ".jpeg", ".png"];

@@ -96,9 +96,10 @@ class NasClient {
   Future<void> rehashServerFile() async {
     await _serverHashFileLock.getLock();
     try {
-      _connection!.getFileInterface().writeFileRelative(hashFile, Uint8List(0), true);
-    }
-    finally {
+      _connection!
+          .getFileInterface()
+          .writeFileRelative(hashFile, Uint8List(0), true);
+    } finally {
       _serverHashFileLock.releaseLock();
     }
   }
@@ -109,8 +110,7 @@ class NasClient {
       return false;
     }
 
-    var file =
-        await _connection!.getFileInterface().getFileRelative(hashFile);
+    var file = await _connection!.getFileInterface().getFileRelative(hashFile);
     if (file == null) {
       await rehashServerFile();
       file = await _connection!.getFileInterface().getFileRelative(hashFile);
@@ -153,10 +153,13 @@ class NasClient {
 
     print("Writing $path");
 
-    await _connection!.getFileInterface().createAllDirsRelative(removePreSlash(File(path).parent.path));
+    await _connection!
+        .getFileInterface()
+        .createAllDirsRelative(removePreSlash(File(path).parent.path));
 
-    final writeResult =
-        await _connection!.getFileInterface().writeFileRelative(removePreSlash(path), file, true);
+    final writeResult = await _connection!
+        .getFileInterface()
+        .writeFileRelative(removePreSlash(path), file, true);
     if (!writeResult) return false;
     final hashResult = await addFileToHashes([path]);
     if (!hashResult) {

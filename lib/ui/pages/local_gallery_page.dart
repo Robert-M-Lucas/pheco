@@ -75,11 +75,19 @@ class _LocalGalleryPageState extends State<LocalGalleryPage> {
             _selectedFolder,
             GalleryType.local),
         floatingActionButton: refreshButton(_reloading, () async {
-          if (!mounted) { return; }
-          setState(() { _reloading = true; });
+          if (!mounted) {
+            return;
+          }
+          setState(() {
+            _reloading = true;
+          });
           await localGallery.update();
-          if (!mounted) { return; }
-          setState(() { _reloading = false; });
+          if (!mounted) {
+            return;
+          }
+          setState(() {
+            _reloading = false;
+          });
         }),
         bottomNavigationBar: const MainBottomBar(
           type: GalleryType.local,
