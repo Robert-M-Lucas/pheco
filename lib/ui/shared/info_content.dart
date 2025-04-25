@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pheco/main.dart';
 
-const int infoVersion = 8;
+const int infoVersion = 9;
 
 List<Widget> infoContent(BuildContext context) {
   return [
@@ -9,7 +9,7 @@ List<Widget> infoContent(BuildContext context) {
       'What\'s New - v${packageInfo.version}/${packageInfo.buildNumber}',
       style: Theme.of(context).textTheme.headlineMedium,
     ),
-    const Text(overviewText),
+    const Text(whatsNewText),
     const Divider(),
     Text(
       'Overview',

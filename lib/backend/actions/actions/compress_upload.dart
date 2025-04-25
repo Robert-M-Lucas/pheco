@@ -8,6 +8,8 @@ import 'package:pheco/backend/actions/action_interface.dart';
 import 'package:pheco/backend/native.dart';
 import 'package:pheco/main.dart';
 
+import '../../utils.dart';
+
 class CompressUploadAction implements ActionInterface {
   const CompressUploadAction();
 
@@ -46,9 +48,7 @@ class CompressUploadAction implements ActionInterface {
     printer("Found ${allFiles.length} images");
 
     final nonPheco = allFiles.where((e) {
-      final split = e.split(".");
-      final pheco = split.length > 2 && split[split.length - 2] == "pheco";
-      return !pheco;
+      return !isPhecoFile(e);
     }).toList();
 
     printer("Found ${nonPheco.length} uncompressed images");
@@ -87,9 +87,7 @@ class CompressUploadAction implements ActionInterface {
         continue;
       }
 
-      var split = i.split(".");
-      split.insert(split.length - 1, "pheco");
-      final newName = split.join(".");
+      final newName = addPhecoExtensionToFile(i);
       compressedFiles.add(newName);
       final saveSuccess = await _saveFile(result, newName, printer);
       if (!saveSuccess) {

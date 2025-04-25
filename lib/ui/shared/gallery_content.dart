@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:pheco/backend/utils.dart';
 
 enum GalleryType { local, serverOnly }
 
@@ -45,9 +46,7 @@ Widget galleryContent(BuildContext context, List<String>? imageUris,
                                     ? true
                                     : (File(e).parent.path == selectedFolder);
                               }).map((e) {
-                                final split = e.split(".");
-                                final pheco = split.length > 2 &&
-                                    split[split.length - 2] == "pheco";
+                                final pheco = isPhecoFile(e);
                                 return Container(
                                   padding: const EdgeInsets.all(4),
                                   color: pheco

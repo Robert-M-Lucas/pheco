@@ -6,6 +6,8 @@ import 'package:pheco/ui/shared/gallery_content.dart';
 import 'package:pheco/ui/shared/gallery_drawer.dart';
 import 'package:pheco/ui/shared/main_bottom_bar.dart';
 
+import '../shared/gallery_refresh_button.dart';
+
 class ServerGalleryPage extends StatefulWidget {
   const ServerGalleryPage({super.key});
 
@@ -15,6 +17,7 @@ class ServerGalleryPage extends StatefulWidget {
 
 class _ServerGalleryPageState extends State<ServerGalleryPage> {
   String? _selectedFolder;
+  bool _reloading = false;
 
   @override
   void initState() {
@@ -94,13 +97,13 @@ class _ServerGalleryPageState extends State<ServerGalleryPage> {
                 _selectedFolder,
                 GalleryType.serverOnly)
             : _noConnectionScreen(context),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            localGallery.update();
-          },
-          tooltip: 'Refresh',
-          child: const Icon(Icons.refresh),
-        ),
+        floatingActionButton: refreshButton(_reloading, () async {
+          if (!mounted) { return; }
+          setState(() { _reloading = true; });
+          await serverGallery.update();
+          if (!mounted) { return; }
+          setState(() { _reloading = false; });
+        }),
         bottomNavigationBar: const MainBottomBar(
           type: GalleryType.serverOnly,
           enabled: true,

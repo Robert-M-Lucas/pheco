@@ -1,3 +1,7 @@
+import 'dart:io';
+import 'package:path/path.dart' as p;
+
+import 'constants.dart';
 import 'package:flutter/foundation.dart';
 
 class SettingsException implements Exception {
@@ -31,6 +35,22 @@ Future<T?> futureNullError<T>(Future<T> f) async {
   }
 }
 
+bool isPhecoFile(String fileNameOrPath) {
+  final fileName = p.basename(fileNameOrPath);
+  final sections = fileName.split(".");
+  if (sections.length < 3) { return false; }
+  return sections[sections.length - 2] == "pheco";
+}
+
+String addPhecoExtensionToFile(String fileNameOrPath) {
+  final sections = fileNameOrPath.split(".");
+  sections.insert(sections.length - 1, "pheco");
+  return sections.join(".");
+}
+
+bool isSupportedFileExt(String fileNameOrPath) {
+  return supportedFileExtensions.contains(p.extension(fileNameOrPath).toLowerCase());
+}
 class AsyncLock {
   bool _lock = false;
 
