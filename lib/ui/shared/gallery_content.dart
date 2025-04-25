@@ -8,62 +8,62 @@ enum GalleryType {
   // serverOnly
 }
 
-Widget galleryContent(BuildContext context, List<String>? imageUris,
-    String? selectedFolder, GalleryType galleryType) {
-  final portrait = MediaQuery.of(context).orientation == Orientation.portrait;
-  final crossAxisCount = portrait ? 2 : 4;
-
-  return Center(
-    child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: (imageUris == null)
-            ? <Widget>[
-                Text(
-                  galleryType == GalleryType.local
-                      ? 'Loading device images'
-                      : 'Loading server-only images',
-                ),
-                Text(
-                  'Sit tight',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-              ]
-            : (imageUris.isEmpty)
-                ? <Widget>[
-                    const Text("No images in this folder"),
-                  ]
-                : <Widget>[
-                    Expanded(
-                        child: Scrollbar(
-                            child: CustomScrollView(
-                      primary: false,
-                      slivers: <Widget>[
-                        SliverPadding(
-                          padding: const EdgeInsets.all(20),
-                          sliver: SliverGrid.count(
-                              crossAxisSpacing: 5,
-                              mainAxisSpacing: 5,
-                              crossAxisCount: crossAxisCount,
-                              children: imageUris.where((e) {
-                                return selectedFolder == null
-                                    ? true
-                                    : (File(e).parent.path == selectedFolder);
-                              }).map((e) {
-                                final pheco = isPhecoFile(e);
-                                return Container(
-                                  padding: const EdgeInsets.all(4),
-                                  color: pheco
-                                      ? Colors.green[300]
-                                      : Colors.red[300],
-                                  child: Image.file(
-                                    File(e),
-                                    fit: BoxFit.cover,
-                                  ),
-                                );
-                              }).toList()),
-                        ),
-                      ],
-                    )))
-                  ]),
-  );
-}
+// Widget galleryContent(BuildContext context, List<String>? imageUris,
+//     String? selectedFolder, GalleryType galleryType) {
+//   final portrait = MediaQuery.of(context).orientation == Orientation.portrait;
+//   final crossAxisCount = portrait ? 2 : 4;
+//
+//   return Center(
+//     child: Column(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: (imageUris == null)
+//             ? <Widget>[
+//                 Text(
+//                   galleryType == GalleryType.local
+//                       ? 'Loading device images'
+//                       : 'Loading server-only images',
+//                 ),
+//                 Text(
+//                   'Sit tight',
+//                   style: Theme.of(context).textTheme.headlineMedium,
+//                 ),
+//               ]
+//             : (imageUris.isEmpty)
+//                 ? <Widget>[
+//                     const Text("No images in this folder"),
+//                   ]
+//                 : <Widget>[
+//                     Expanded(
+//                         child: Scrollbar(
+//                             child: CustomScrollView(
+//                       primary: false,
+//                       slivers: <Widget>[
+//                         SliverPadding(
+//                           padding: const EdgeInsets.all(20),
+//                           sliver: SliverGrid.count(
+//                               crossAxisSpacing: 5,
+//                               mainAxisSpacing: 5,
+//                               crossAxisCount: crossAxisCount,
+//                               children: imageUris.where((e) {
+//                                 return selectedFolder == null
+//                                     ? true
+//                                     : (File(e).parent.path == selectedFolder);
+//                               }).map((e) {
+//                                 final pheco = isPhecoFile(e);
+//                                 return Container(
+//                                   padding: const EdgeInsets.all(4),
+//                                   color: pheco
+//                                       ? Colors.green[300]
+//                                       : Colors.red[300],
+//                                   child: Image.file(
+//                                     File(e),
+//                                     fit: BoxFit.cover,
+//                                   ),
+//                                 );
+//                               }).toList()),
+//                         ),
+//                       ],
+//                     )))
+//                   ]),
+//   );
+// }

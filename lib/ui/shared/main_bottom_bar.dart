@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pheco/ui/pages/local_gallery_page.dart';
 import 'package:pheco/ui/pages/action_page.dart';
-import 'package:pheco/ui/shared/gallery_content.dart';
+
+import 'gallery_content.dart';
 
 class MainBottomBar extends StatefulWidget {
   const MainBottomBar({super.key, required this.type, required this.enabled});

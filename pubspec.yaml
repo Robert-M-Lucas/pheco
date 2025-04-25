@@ -47,6 +47,7 @@ dependencies:
   tuple: ^2.0.2
   flutter_secure_storage: ^9.2.4
   package_info_plus: ^8.2.1
+  receive_intent: ^0.2.7
 
 dev_dependencies:
 #  flutter_test:

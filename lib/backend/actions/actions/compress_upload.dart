@@ -25,8 +25,6 @@ class CompressUploadAction implements ActionInterface {
 
   @override
   Future<void> run(Function(String) printer) async {
-    printer("DEBUG: Only working in testing folder");
-
     printer("Fetching local images");
     var allFiles = localGallery.getFilesInFolder(null);
 

@@ -119,7 +119,7 @@ class MediaScannerHelper(private val mContext: Context, private val mFilePath: S
         mScanner?.scanFile(mFilePath, null)
     }
 
-    override fun onScanCompleted(path: String, uri: Uri) {
+    override fun onScanCompleted(path: String, uri: Uri?) {
         Log.d("MediaScanner", "Scan completed for: $path -> Uri: $uri")
         result.success(path)
         mScanner?.disconnect()

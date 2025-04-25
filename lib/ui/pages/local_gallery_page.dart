@@ -1,12 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:pheco/backend/utils.dart';
 import 'package:pheco/main.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
 import 'package:path/path.dart' as path;
 import 'package:pheco/ui/shared/gallery_content.dart';
 import 'package:pheco/ui/shared/gallery_drawer.dart';
+import 'package:pheco/ui/shared/gallery_refresh_button.dart';
 import 'package:pheco/ui/shared/main_bottom_bar.dart';
 
-import '../shared/gallery_refresh_button.dart';
 
 class LocalGalleryPage extends StatefulWidget {
   const LocalGalleryPage({super.key});
@@ -69,11 +72,10 @@ class _LocalGalleryPageState extends State<LocalGalleryPage> {
             _selectedFolder = s;
           });
         }),
-        body: galleryContent(
+        body: _galleryContent(
             context,
             localGallery.getFilesInFolder(_selectedFolder),
-            _selectedFolder,
-            GalleryType.local),
+            _selectedFolder),
         floatingActionButton: refreshButton(_reloading, () async {
           if (!mounted) {
             return;
@@ -94,4 +96,62 @@ class _LocalGalleryPageState extends State<LocalGalleryPage> {
           enabled: true,
         ));
   }
+
+  Widget _galleryContent(BuildContext context, List<String>? imageUris,
+      String? selectedFolder) {
+    final portrait = MediaQuery.of(context).orientation == Orientation.portrait;
+    final crossAxisCount = portrait ? 2 : 4;
+
+    return Center(
+      child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: (imageUris == null)
+              ? <Widget>[
+            const Text('Loading device images'
+            ),
+            Text(
+              'Sit tight',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+          ]
+              : (imageUris.isEmpty)
+              ? <Widget>[
+            const Text("No images in this folder"),
+          ]
+              : <Widget>[
+            Expanded(
+                child: Scrollbar(
+                    child: CustomScrollView(
+                      primary: false,
+                      slivers: <Widget>[
+                        SliverPadding(
+                          padding: const EdgeInsets.all(20),
+                          sliver: SliverGrid.count(
+                              crossAxisSpacing: 5,
+                              mainAxisSpacing: 5,
+                              crossAxisCount: crossAxisCount,
+                              children: imageUris.where((e) {
+                                return selectedFolder == null
+                                    ? true
+                                    : (File(e).parent.path == selectedFolder);
+                              }).map((e) {
+                                final pheco = isPhecoFile(e);
+                                return Container(
+                                  padding: const EdgeInsets.all(4),
+                                  color: pheco
+                                      ? Colors.green[300]
+                                      : Colors.red[300],
+                                  child: Image.file(
+                                    File(e),
+                                    fit: BoxFit.cover,
+                                  ),
+                                );
+                              }).toList()),
+                        ),
+                      ],
+                    )))
+          ]),
+    );
+  }
+
 }

@@ -30,7 +30,7 @@ const String foldersKey = "folders";
 const String welcomeVersionKey = "welcomeVersion";
 
 class SettingsStore {
-  final List<Function()> listeners = [];
+  final List<Future<void> Function()> listeners = [];
 
   late final SharedPreferences _sp;
 
@@ -177,13 +177,11 @@ class SettingsStore {
     await _sp.setInt(welcomeVersionKey, version);
   }
 
-  void addUpdateListener(Function() permanentListener) {
+  void addUpdateListener(Future<dynamic> Function() permanentListener) {
     listeners.add(permanentListener);
   }
 
-  void _updateListeners() {
-    for (final l in listeners) {
-      l();
-    }
+  Future<void> _updateListeners() async {
+    await Future.wait(listeners.map((l) => l()));
   }
 }
