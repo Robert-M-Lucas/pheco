@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pheco/ui/pages/local_gallery_page.dart';
-import 'package:pheco/ui/pages/run_page.dart';
+import 'package:pheco/ui/pages/action_page.dart';
 import 'package:pheco/ui/pages/server_gallery_page.dart';
 import 'package:pheco/ui/shared/gallery_content.dart';
 
@@ -77,7 +77,7 @@ class _MainBottomBarState extends State<MainBottomBar> {
                         Navigator.of(context).pushReplacement(PageRouteBuilder(
                           pageBuilder:
                               (context, animation, secondaryAnimation) =>
-                                  const RunPage(),
+                                  const ActionPage(),
                           transitionsBuilder:
                               (context, animation, secondaryAnimation, child) {
                             final tween = Tween(begin: 0.0, end: 1.0);

@@ -1,0 +1,1 @@
+/home/robert/AndroidStudioProjects/pheco/build/app/intermediates/cxx/Debug/283c6s2a/obj/armeabi-v7a

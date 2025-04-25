@@ -7,7 +7,7 @@ import 'package:pheco/backend/utils.dart';
 
 import '../nas_utils.dart';
 
-class SftpInterface implements NasConnectionInterface, NasFileInterface {
+class SftpInterface extends NasFileInterface implements NasConnectionInterface {
   SftpInterface(this._localIp, this._publicIp, serverFolder, this._username,
       this._password) {
     if (!serverFolder.endsWith('/')) {
@@ -35,6 +35,9 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
       onPasswordRequest: () => _password,
     );
   }
+
+  @override
+  String rootDirPath() => _serverFolder;
 
   @override
   Future<String?> testConnectionSettings() async {
@@ -184,13 +187,13 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
   }
 
   @override
-  Future<bool> dirExistsRelative(String dir) async {
+  Future<bool> dirExistsAbsolute(String dir) async {
     final client = _getClient();
     if (client == null) {
       return false;
     }
     return await client
-        .readdir(Directory(dir).parent.path)
+        .readdir(Directory(dir).path)
         .isEmpty
         .then((_) => true)
         .onError((_, __) => false);
@@ -204,11 +207,14 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
       return false;
     }
 
-    if (await dirExistsRelative(dir)) {
+    if (await dirExistsAbsolute(dir)) {
       print("Dir exists");
       return true;
     }
 
+    if (dir.endsWith("/")) {
+      dir = dir.substring(0, dir.length - 1);
+    }
     final split = dir.split('/').toList();
     split.removeAt(0);
     var currentDir = "";
@@ -228,7 +234,7 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
       }
     }
 
-    return await dirExistsRelative(dir);
+    return await dirExistsAbsolute(dir);
   }
 
   @override
@@ -249,35 +255,44 @@ class SftpInterface implements NasConnectionInterface, NasFileInterface {
   }
 
   @override
-  Future<bool> writeFileRelative(String path, Uint8List contents) async {
+  Future<bool> writeFileAbsolute(String path, Uint8List contents, bool create) async {
     final client = _getClient();
     if (client == null) {
       return false;
     }
 
-    final file = await client.open(_serverFolder + path);
     try {
-      await file.writeBytes(contents);
+      final file = await client.open(path, mode: create ? SftpFileOpenMode.create | SftpFileOpenMode.write : SftpFileOpenMode.write)
+          .onError((e, st) {
+            throw Exception("1 $e");
+      });
+      await file.writeBytes(contents).onError((e, st) {
+        throw Exception("2 $e");
+      });
     } on Exception catch (e) {
-      print(e);
+      print("CE X $e");
       return false;
     }
     return true;
   }
 
   @override
-  Future<bool> appendFileRelative(String path, Uint8List contents) async {
+  Future<bool> appendFileAbsolute(String path, Uint8List contents) async {
     final client = _getClient();
     if (client == null) {
       return false;
     }
 
-    final file = await client.open(_serverFolder + path);
     try {
+      final file = await client.open(path).onError((e, st) {
+        throw Exception("1 $e");
+      });
       final size = (await file.stat()).size!;
-      await file.writeBytes(contents, offset: size);
+      await file.writeBytes(contents, offset: size).onError((e, st) {
+        throw Exception("2 $e");
+      });
     } on Exception catch (e) {
-      print(e);
+      print("CE Y $e");
       return false;
     }
     return true;

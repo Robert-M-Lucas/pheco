@@ -1,4 +1,5 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pheco/backend/settings_store.dart';
 import 'package:pheco/main.dart';
@@ -181,6 +182,14 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
+  void _configureForEmulator() {
+    setState(() {
+      _localIpFieldController.text = "10.0.2.2:22";
+      _serverFolderController.text = "/home/robert/pheco/";
+      _usernameFieldController.text = "robert";
+    });
+  }
+
   Widget _settingsOptions(BuildContext context) {
     return ListView(
       children: [
@@ -195,6 +204,26 @@ class _SettingsPageState extends State<SettingsPage> {
                 color: Color.fromARGB(255, 100, 100, 100)),
           )),
         ),
+        if (kDebugMode) Padding(
+          padding: const EdgeInsets.all(1.0),
+          child: Center(
+              child: TextButton(
+                onPressed: () {
+                  _configureForEmulator();
+                },
+                child: const Text("Configure for emulator"),
+                ),
+        )),
+        if (kDebugMode) Padding(
+            padding: const EdgeInsets.all(1.0),
+            child: Center(
+              child: TextButton(
+                onPressed: () {
+                  nasClient.update();
+                },
+                child: const Text("Force reconnect"),
+              ),
+            )),
         ListTile(
           title: const Text('Select Protocol'),
           subtitle: DropdownButton<String>(

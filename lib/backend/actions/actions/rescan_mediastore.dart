@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pheco/backend/actions/action_interface.dart';
+import 'package:pheco/backend/native.dart';
 import 'package:pheco/main.dart';
 
 class RescanMediaStoreAction implements ActionInterface {
@@ -19,7 +20,7 @@ class RescanMediaStoreAction implements ActionInterface {
   Future<void> run(Function(String) printer) async {
     printer("Note: This task has no progress indication -");
     printer("this can take around a minute");
-    await platformChannel.invokeMethod('rescanMedia');
+    await rescanMedia();
   }
 
   @override

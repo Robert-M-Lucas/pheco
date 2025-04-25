@@ -4,14 +4,14 @@ import 'package:pheco/main.dart';
 import 'package:pheco/ui/pages/settings_page.dart';
 import 'package:pheco/ui/shared/main_bottom_bar.dart';
 
-class RunPage extends StatefulWidget {
-  const RunPage({super.key});
+class ActionPage extends StatefulWidget {
+  const ActionPage({super.key});
 
   @override
-  State<RunPage> createState() => _RunPageState();
+  State<ActionPage> createState() => _ActionPageState();
 }
 
-class _RunPageState extends State<RunPage> {
+class _ActionPageState extends State<ActionPage> {
   final List<String> _output = [
     "",
     "",
@@ -228,7 +228,7 @@ class _RunPageState extends State<RunPage> {
                                 (e.requireValidSettings() &&
                                     !settingsStore.validData()) ||
                                 (e.requireServerConnection() &&
-                                    !serverGallery.isInitialised())),
+                                    !nasClient.isConnected())),
                             subtitle: Text(e.getSubtitle()),
                             onTap: () async {
                               setState(() {

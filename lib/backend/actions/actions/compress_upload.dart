@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pheco/backend/actions/action_interface.dart';
+import 'package:pheco/backend/native.dart';
 import 'package:pheco/main.dart';
 
 class CompressUploadAction implements ActionInterface {
@@ -65,7 +66,17 @@ class CompressUploadAction implements ActionInterface {
       }
       compressed += 1;
 
+
+
       File file = File(i);
+
+      final uploadResult = await nasClient.sendImageToServer(
+          await file.readAsBytes(), file.absolute.path);
+      if (!uploadResult) {
+        printer("Failed to upload '$i'");
+        continue;
+      }
+
       var result = await FlutterImageCompress.compressWithFile(
         file.absolute.path,
         quality: 40,
@@ -84,15 +95,10 @@ class CompressUploadAction implements ActionInterface {
       if (!saveSuccess) {
         continue;
       }
-      await platformChannel.invokeMethod('rescanMedia', {'path': newName});
 
-      final uploadResult = await nasClient.sendFileToServer(
-          await file.readAsBytes(), file.absolute.path);
-      if (!uploadResult) {
-        printer("Failed to upload '$i'");
-      } else {
-        await file.delete();
-      }
+      await rescanMedia(path: newName);
+
+      await file.delete();
     }
   }
 
@@ -112,7 +118,7 @@ class CompressUploadAction implements ActionInterface {
 
     // Write the file
     File file = File(filePath);
-    final result = await file.writeAsBytes(uint8List);
+    await file.writeAsBytes(uint8List);
     return true;
   }
 }

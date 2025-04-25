@@ -1,0 +1,2 @@
+/home/robert/AndroidStudioProjects/pheco/android/app/.cxx/Debug/283c6s2a/x86_64/CMakeFiles/edit_cache.dir
+/home/robert/AndroidStudioProjects/pheco/android/app/.cxx/Debug/283c6s2a/x86_64/CMakeFiles/rebuild_cache.dir
